@@ -1,0 +1,7 @@
+/build*/
+/benchmark-output/
+.env
+.env.*
+!.env.example
+*.pem
+.DS_Store
