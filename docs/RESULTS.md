@@ -2,10 +2,9 @@
 
 ## Status
 
-Phase 1 is complete: scalar, AVX2, and CUDA correctness checks pass, and the
-measurements below demonstrate a CPU/GPU crossover. Explicit backend batches
-are measured here; runtime microbatching, heuristic, and Jev evaluations remain
-pending their implementation phases.
+Phases 1 and 2 are complete: scalar, AVX2, and CUDA correctness checks pass,
+the measurements below demonstrate a CPU/GPU crossover, and concurrent runtime
+batching improves burst throughput. Heuristic and Jev evaluations remain pending.
 
 ## Scalar baseline — 2026-09-23
 
@@ -160,5 +159,70 @@ other GPUs, sustained production traffic, or a bare-metal Linux system.
 - Phase 1 review found no outstanding correctness issues. The first hardware
   validation required no changes to the backend implementation.
 
-Phase 2 must now verify concurrent submission, bounded queues, safe shutdown,
-size/timeout microbatch flushes, and a runtime batching throughput improvement.
+## Concurrent runtime batching — 2026-09-24
+
+Same Razer hardware, toolchain, Release flags, dataset seed 42, dimension 384,
+and top-K 10 as the matrix above. Two CPU workers use AVX2; one GPU worker owns
+CUDA. The waiting queue capacity is 1,024; GPU batches allow 32 requests with
+a 2 ms oldest-request timeout. Each mode runs three warmup bursts followed by
+ten measured bursts of 512 requests, cycling through 32 deterministic queries.
+Each burst drains before the next starts. Setup and shutdown are excluded;
+throughput includes submission and result collection. Request latency includes
+queueing, execution, and publication up to immediately before promise fulfillment.
+Source is the Phase 2 working tree based on `0a7546b`, after the timing review fix.
+
+| Vectors | Route | Queries/sec | p50 ms | p95 ms | p99 ms | Mean queue wait ms |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | AVX2, 2 workers | 51,254.9 | 4.873 | 9.230 | 9.706 | 4.880 |
+| 1,000 | GPU immediate | 6,752.3 | 38.135 | 72.157 | 76.111 | 37.827 |
+| 1,000 | GPU batch | 57,331.9 | 4.593 | 8.522 | 8.957 | 4.109 |
+| 100,000 | AVX2, 2 workers | 262.3 | 979.679 | 1,856.772 | 1,936.052 | 972.396 |
+| 100,000 | GPU immediate | 1,047.9 | 244.613 | 464.529 | 484.013 | 243.735 |
+| 100,000 | GPU batch | 1,272.1 | 203.732 | 399.316 | 404.935 | 188.469 |
+
+Batching improves throughput over immediate GPU execution by **8.49×** on the
+small dataset and **1.21×** on the default dataset. All checksums match within
+each dataset. Both batch cases execute 160 full batches of 32 via size flushes;
+the immediate cases execute 5,120 batches of one. Mean CUDA kernel intervals are
+0.024/0.237 ms (immediate/batch) for 1k vectors and 0.571/18.853 ms for 100k.
+These are whole-batch intervals, counted once per batch. Timeout flushing is
+covered by tests; these saturated bursts produce no timeout flushes.
+
+This is an intentionally queued burst workload, not a single-query latency
+comparison. Tail latency includes hundreds of preceding requests, especially
+on the large dataset. It does not establish an SLO for sustained open-loop
+traffic, or a benefit from batching sparse arrivals. The later load generator
+will measure those policy tradeoffs. Windows background load, WSL scheduling,
+and unlocked clocks remain uncontrolled.
+
+```sh
+for vectors in 1000 100000; do
+  python3 benchmarks/run_matrix.py --binary build-gpu/flowstate_runtime_bench \
+    --require-all --vectors "$vectors" --dimensions 384 --batch-sizes 32 \
+    --iterations 10 --warmup 3 --label 'Razer; WSL2; two CPU workers' \
+    --output "benchmark-output/runtime-$vectors"
+done
+```
+
+Raw CSV and hardware/compiler metadata are retained in the ignored output
+directories on both hosts. The benchmark CLI also exposes worker count, queue
+capacity, requests per burst, and batch timeout for direct runs.
+
+Phase 2 validation and review:
+
+- All seven Release CTest tests pass on the Razer, including mixed CPU/CUDA
+  routing, batch size/timeout, concurrent submissions, shared queue capacity,
+  concurrent shutdown calls, shutdown during submission and active GPU work,
+  future lifetime, and backend failure recovery.
+- Linux CPU-only AddressSanitizer, UBSan, and ThreadSanitizer suites pass without
+  diagnostics; CUDA tests explicitly skip in sanitizer builds. GCC TSan initially
+  failed before `main()` with an unexpected memory mapping under WSL. Running
+  `setarch x86_64 -R ctest --test-dir build-thread --output-on-failure` resolves
+  its address-space conflict for that process; no system-wide ASLR setting changed.
+- Native ARM Release tests pass; unavailable AVX2/CUDA tests skip.
+- The invalid-CLI test now checks both the expected exit code and diagnostic,
+  so a sanitizer startup failure cannot masquerade as a passing negative test.
+- The specified deeper `codex review --uncommitted` found that end-to-end latency
+  stopped at backend completion. The timestamp now includes completion work and
+  earlier batch publications, with regression coverage. The benchmark above was
+  rerun after this fix. No unresolved review findings remain.

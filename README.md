@@ -1,20 +1,25 @@
 # Flowstate
 
 Flowstate is a C++20 exact dot-product vector search project, being built toward
-an adaptive CPU/CUDA runtime. The current implementation is the Phase 1 compute
-core: deterministic datasets, scalar and AVX2 search, a CUDA implementation,
+an adaptive CPU/CUDA runtime. It implements deterministic datasets, scalar and
+AVX2 search, CUDA search, a bounded concurrent runtime, GPU microbatching,
 correctness tests, and reproducible benchmarks.
 
 **Phase 1 is complete.** Scalar, AVX2, and CUDA pass correctness tests on an
 i9-12900H / RTX 3080 Ti Laptop GPU under WSL 2. A measured crossover favors AVX2
-for a small single query and CUDA for batches of the same workload. Phase 2
-adds the concurrent runtime and microbatcher.
+for a small single query and CUDA for batches of the same workload. **Phase 2 is
+complete:** concurrent submission, shutdown, and GPU batching are validated;
+batching improves throughput in both measured burst workloads.
 See [progress](PROGRESS.md), [results](docs/RESULTS.md), and the
 [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
 
 ```mermaid
 flowchart LR
-    CLI[Search CLI / benchmark] --> Backend[Backend interface]
+    Submit[Async submission] --> Queue[Bounded CPU / GPU queues]
+    Queue --> CPU[Fixed CPU workers]
+    Queue --> GPU[Single GPU worker / microbatcher]
+    CPU --> Backend[Backend interface]
+    GPU --> Backend
     Dataset[Immutable in-memory dataset] --> Backend
     Backend --> Scalar[Scalar CPU]
     Backend --> AVX[AVX2 CPU]
@@ -61,8 +66,8 @@ cmake --build build-ubsan -j
 ctest --test-dir build-ubsan --output-on-failure
 ```
 
-ThreadSanitizer support is configured for later concurrency work. No worker pool
-exists yet. The current host's AddressSanitizer runtime stalls before `main()`;
+Linux ThreadSanitizer checks cover the runtime's concurrency paths. The current
+macOS host's AddressSanitizer runtime stalls before `main()`;
 Linux ASan and UBSan checks pass, including AVX2. See
 [validation limitations](docs/RESULTS.md) for the WDDM Compute Sanitizer limitation.
 
@@ -109,13 +114,47 @@ for one query (0.028 ms vs CUDA 0.123 ms), while CUDA wins at batch size 8
 (0.166 ms vs AVX2 0.241 ms). At 100,000 × 384, CUDA batch 32 reaches about
 **1,206 queries/sec**; AVX2 reaches about **133 queries/sec**.
 
-## Runtime direction
+## Concurrent runtime
 
-The remaining phases add bounded queues and worker threads, GPU microbatching,
-telemetry, heuristic scheduling, Jev, and a lightweight browser dashboard.
-The native **data plane** will own all request execution. Jev will be a periodic
+```cpp
+#include "flowstate/runtime.hpp"
+
+auto dataset = flowstate::Dataset::generate(100000, 384, 42);
+flowstate::RuntimeConfig config;
+config.enable_cuda = true; // Omit for a CPU-only runtime.
+flowstate::Runtime runtime(dataset, config);
+flowstate::Query query{std::vector<float>(384, 0.25f), 10};
+auto future = runtime.submit(std::move(query), flowstate::Route::GpuBatch);
+auto completion = future.get(); // IDs/scores, request ID, backend, batch size, timing.
+runtime.shutdown();             // Drain accepted work and join every worker.
+```
+
+The default route is CPU (AVX2 when available, otherwise scalar). Explicit GPU
+routes either execute immediately or collect up to 32 queries, with a 2 ms
+oldest-request timeout. Two fixed CPU workers and one GPU worker share a total
+capacity of 1,024 waiting requests; in-flight work is separately bounded.
+`submit` validates inputs and throws `QueueFull` or `RuntimeStopped` on rejection.
+Backend failures propagate through the affected futures. Shutdown is idempotent;
+the destructor also drains pending work. GPU routes require an enabled backend.
+
+```sh
+./build-gpu/flowstate_runtime_bench --backend all --require-all \
+  --vectors 100000 --dimension 384 --workers 2 --requests 512 \
+  --batch-size 32 --max-wait-us 2000 --iterations 10 --warmup 3
+```
+
+This benchmark compares CPU workers, immediate GPU execution, and runtime GPU
+batching using repeated bursts. CSV includes throughput, request p50/p95/p99,
+queue wait, observed batch size, flush counts, and kernel time per batch.
+Requests must fit the configured queue capacity for this burst benchmark.
+
+## Remaining phases
+
+The remaining phases add rolling telemetry, heuristic scheduling, Jev, and a
+lightweight browser dashboard. The native **data plane** owns all request
+execution. Jev will be a periodic
 **control plane** policy selector, outside the request hot path, with heuristic
-fallback. These runtime and dashboard features are not implemented yet.
+fallback. Adaptive policy selection and the dashboard are not implemented yet.
 
 Current technical concerns are floating-point reduction differences, safe SIMD
 dispatch, GPU resource lifetime, and measuring total result latency alongside

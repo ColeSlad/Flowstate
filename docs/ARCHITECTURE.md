@@ -1,6 +1,6 @@
 # Architecture
 
-## Current implementation: Phase 1
+## Compute backends
 
 `Dataset` owns a contiguous row-major float32 array. It validates shape and finite
 values, exposes read-only spans, and is shared with each backend through
@@ -46,18 +46,40 @@ download separately; total wall-clock latency also includes host work. Pageable
 host memory can introduce transfer staging/serialization, so those event
 intervals should not be interpreted as isolated link bandwidth measurements.
 
-## Thread model and future runtime boundary
+## Runtime ownership and request lifecycle
 
-There are no background threads, request queues, or runtime microbatcher yet.
-CPU backend instances are reentrant because searches mutate only local data.
-CUDA instances reuse buffers and must be called serially by their owning worker.
-The current batch API executes an explicit batch supplied by its caller; size
-and timeout based request aggregation belongs to Phase 2.
+`Runtime` owns fixed CPU workers and, when enabled, one GPU worker. CPU backend
+instances are reentrant because searches mutate only local data. Only the GPU
+worker calls the CUDA instance, preserving exclusive ownership of reusable
+buffers, events, and its stream. Dataset/backend lifetimes exceed worker lifetimes.
 
-Phase 2 will own request IDs, bounded queues, futures, worker shutdown, and GPU
-microbatching. Phase 3 will add rolling telemetry and native scheduling policies.
+Submission validates the query, assigns a request ID, and places an owning job
+and promise in the chosen queue. One mutex protects both queues and counters;
+separate condition variables wake CPU and GPU workers. The configured capacity
+bounds total waiting work across both queues, excluding at most `cpu_workers`
+CPU requests and `max_batch_size` GPU requests in flight. Queue-full and shutdown
+rejections are synchronous exceptions. Accepted backend failures are delivered
+through futures, and the worker remains available for subsequent work.
+
+The GPU queue preserves FIFO order. A batch flushes at maximum size or when its
+oldest request reaches the configured timeout. An immediate request behind a
+partial batch flushes that batch without waiting; it then executes alone.
+Shutdown stops admission, wakes all workers, drains accepted jobs (flushing any
+partial batch immediately), and joins. A separate shutdown mutex serializes
+concurrent join callers. No thread is detached. Results own their backend name
+and data, and futures can outlive the runtime.
+
+Completions record queue wait, backend execution, and submission-to-completion
+latency, including result publication overhead up to the timestamp immediately
+before promise fulfillment. CUDA event timings describe the whole batch and
+must not be summed once per request. A mutex-protected snapshot reports queue
+depths, in-flight work, successes/failures, rejections, flush counts, and cumulative
+timings; device intervals are counted once per batch. Unavailable device timings
+remain absent. No telemetry reader accesses CUDA resources directly.
+
+## Control-plane boundary
+
+Phase 3 will add rolling telemetry and native scheduling policies.
 Phase 4 will run Jev periodically over bounded summaries, with timeouts and
 heuristic fallback; no Jev call will execute or block individual queries.
 Phase 5 will expose telemetry to a dashboard independently of runtime correctness.
-Phase 1's hardware validation and CPU/GPU crossover gate is satisfied;
-Phase 2 is the next implementation step.

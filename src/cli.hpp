@@ -18,6 +18,10 @@ struct Options {
     std::size_t iterations = 20;
     std::size_t warmup = 3;
     std::string label = "unspecified";
+    std::size_t workers = 2;
+    std::size_t requests = 512;
+    std::size_t queue_capacity = 1024;
+    std::size_t max_wait_us = 2000;
     bool require_all = false;
     bool help = false;
 };
@@ -30,8 +34,9 @@ inline std::size_t number(std::string_view value) {
     return result;
 }
 
-inline Options parse(int argc, char** argv, bool benchmark) {
+inline Options parse(int argc, char** argv, bool benchmark, bool runtime = false) {
     Options options;
+    if (runtime) options.batch_size = 32;
     options.backend = benchmark ? "all" : "auto";
     for (int i = 1; i < argc; ++i) {
         const std::string_view key(argv[i]);
@@ -51,6 +56,10 @@ inline Options parse(int argc, char** argv, bool benchmark) {
         else if (key == "--iterations" && benchmark) options.iterations = number(value);
         else if (key == "--warmup" && benchmark) options.warmup = number(value);
         else if (key == "--label" && benchmark) options.label = value;
+        else if (key == "--workers" && runtime) options.workers = number(value);
+        else if (key == "--requests" && runtime) options.requests = number(value);
+        else if (key == "--queue-capacity" && runtime) options.queue_capacity = number(value);
+        else if (key == "--max-wait-us" && runtime) options.max_wait_us = number(value);
         else throw std::invalid_argument("Unknown option: " + std::string(key));
     }
     if (!options.vectors || !options.dimension || !options.top_k || options.top_k > options.vectors)
@@ -60,6 +69,9 @@ inline Options parse(int argc, char** argv, bool benchmark) {
     if (options.backend != "auto" && options.backend != "scalar" && options.backend != "avx2" &&
         options.backend != "cuda" && !(benchmark && options.backend == "all"))
         throw std::invalid_argument("Unknown backend: " + options.backend);
+    if (runtime && (!options.workers || !options.requests || !options.queue_capacity ||
+                    options.requests > options.queue_capacity || options.max_wait_us > 60000000))
+        throw std::invalid_argument("Positive workers/requests required; requests must fit the queue; max wait <= 60 seconds");
     if (options.require_all && options.backend != "all")
         throw std::invalid_argument("--require-all requires --backend all");
     return options;
