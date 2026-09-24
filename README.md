@@ -5,9 +5,10 @@ an adaptive CPU/CUDA runtime. The current implementation is the Phase 1 compute
 core: deterministic datasets, scalar and AVX2 search, a CUDA implementation,
 correctness tests, and reproducible benchmarks.
 
-**Phase 1 is not complete.** Scalar execution is validated on ARM macOS. AVX2
-cross-compiles but needs execution on supported hardware. CUDA needs compilation,
-correctness validation, and a measured CPU/GPU crossover on an NVIDIA host.
+**Phase 1 is complete.** Scalar, AVX2, and CUDA pass correctness tests on an
+i9-12900H / RTX 3080 Ti Laptop GPU under WSL 2. A measured crossover favors AVX2
+for a small single query and CUDA for batches of the same workload. Phase 2
+adds the concurrent runtime and microbatcher.
 See [progress](PROGRESS.md), [results](docs/RESULTS.md), and the
 [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
 
@@ -26,7 +27,8 @@ flowchart LR
 
 ## Build and test
 
-Requires CMake 3.24+ and a C++20 GCC or Clang compiler.
+Requires CMake 3.24+ and a C++20 GCC or Clang compiler. The GPU build was validated
+with Ubuntu 24.04 / WSL 2, GCC 13.3, CMake 3.28.3, and CUDA 13.2.86.
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -61,7 +63,8 @@ ctest --test-dir build-ubsan --output-on-failure
 
 ThreadSanitizer support is configured for later concurrency work. No worker pool
 exists yet. The current host's AddressSanitizer runtime stalls before `main()`;
-see [validation limitations](docs/RESULTS.md).
+Linux ASan and UBSan checks pass, including AVX2. See
+[validation limitations](docs/RESULTS.md) for the WDDM Compute Sanitizer limitation.
 
 ## Run a search
 
@@ -100,8 +103,11 @@ excluded. The CPU batch path executes queries serially with one calling thread.
 The matrix runner saves compiler commands/flags, host information, GPU/driver and
 CUDA versions when available, input parameters, and Git state alongside CSV.
 `--require-all` fails if either AVX2 or CUDA is unavailable. Raw artifacts are
-ignored by Git. [Recorded results](docs/RESULTS.md) currently contain only the
-native ARM scalar baseline: about **53 queries/sec** at 100,000 × 384, K=10.
+ignored by Git. [Recorded results](docs/RESULTS.md) include all 45 measured
+CPU/GPU cases plus the original ARM baseline. At 1,000 × 384, K=10, AVX2 wins
+for one query (0.028 ms vs CUDA 0.123 ms), while CUDA wins at batch size 8
+(0.166 ms vs AVX2 0.241 ms). At 100,000 × 384, CUDA batch 32 reaches about
+**1,206 queries/sec**; AVX2 reaches about **133 queries/sec**.
 
 ## Runtime direction
 

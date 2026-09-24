@@ -1,25 +1,21 @@
 # Progress
 
 ## Current Phase
-Phase 1 — Compute backends (blocked on remote Windows restart)
+Phase 2 — Runtime
 
 ## Completed
-- [ ] Phase 1 — Compute backends
+- [x] Phase 1 — Compute backends
 - [ ] Phase 2 — Runtime
 - [ ] Phase 3 — Adaptive scheduling
 - [ ] Phase 4 — Jev integration
 - [ ] Phase 5 — Dashboard and polish
 
 ## Current Notes
-- Fully read `agents/FLOWSTATE_CODEX_LEAN_SPEC.md`; it remains the source of truth.
-- Initialized `main`; verified origin: `git@github.com:ColeSlad/Flowstate.git`.
-- Implemented CMake setup, deterministic datasets, scalar/AVX2/CUDA search, tests, CLI, and CSV benchmark matrix.
-- ARM Release and UBSan checks pass: scalar suite (44,857 checks) and two CLI tests; AVX2/CUDA explicitly skip.
-- x86 Release cross-build passes scalar/CLI tests under Rosetta; AVX2 execution is unavailable.
-- SSH access to the Razer validation host works: i9-12900H, RTX 3080 Ti Laptop GPU (16 GB), Windows 11.
-- User approved WSL 2, Ubuntu 24.04, and C++/CUDA toolchain installation. WSL 2.7.14 is installed and Virtual Machine Platform enabled; Windows requires a restart.
-- Ubuntu, GCC/CMake/Git, and CUDA toolkit installation remain pending. No automatic restart was performed; CUDA remains uncompiled/unverified.
-- ASan builds but hangs before main in Apple's sanitizer initialization, including a timed retry outside the sandbox.
-- Scalar 100k × 384, K=10: mean 18.807 ms, p95 19.388 ms, 53.17 queries/sec. See `docs/RESULTS.md` for all dimensions and methodology.
-- Reviewed ordering, SIMD bounds/dispatch, resource lifetime, CUDA error paths, and benchmark boundaries; no unresolved CPU findings.
-- Next: user restarts the Razer; finish the approved Ubuntu/toolchain setup, validate AVX2/CUDA, measure a CPU/GPU crossover, complete Phase 1, then begin Phase 2.
+- `agents/FLOWSTATE_CODEX_LEAN_SPEC.md` is the source of truth; canonical origin verified.
+- Scalar, AVX2, and CUDA pass equivalence tests on the Razer; all five CUDA Release tests pass without skips.
+- Remote environment: i9-12900H, RTX 3080 Ti Laptop 16 GB, WSL 2.7.14 / Ubuntu 24.04, GCC 13.3, CUDA 13.2.86.
+- Linux ASan/UBSan CPU checks pass, including AVX2. Compute Sanitizer cannot initialize the WDDM debugger interface; documented separately.
+- Crossover at 1k × 384: batch 1 AVX2 0.028 ms vs CUDA 0.123 ms; batch 8 AVX2 0.241 ms vs CUDA 0.166 ms.
+- Full 45-row matrix and transfer/kernel timings are summarized in `docs/RESULTS.md`; raw output stays ignored.
+- Phase 1 review found no unresolved correctness issues; hardware validation needed no implementation changes.
+- Next: fixed CPU workers, bounded queues, futures/request timing, GPU size/timeout batching, shutdown tests, and runtime benchmark.

@@ -24,7 +24,7 @@ attribute isolates AVX instructions from the portable executable baseline.
 Runtime CPU/OS feature detection gates its factory. Fused contraction is disabled
 for the compute core to reduce avoidable differences between reduction orders.
 
-## CUDA implementation (awaiting compilation and hardware validation)
+## CUDA implementation (validated on RTX 3080 Ti Laptop GPU)
 
 A CUDA instance owns the persistent dataset on device 0, one nonblocking stream,
 four timing events, grow-on-demand device query/score buffers, and reusable host
@@ -59,4 +59,5 @@ microbatching. Phase 3 will add rolling telemetry and native scheduling policies
 Phase 4 will run Jev periodically over bounded summaries, with timeouts and
 heuristic fallback; no Jev call will execute or block individual queries.
 Phase 5 will expose telemetry to a dashboard independently of runtime correctness.
-These phases remain pending until Phase 1's hardware validation gate is satisfied.
+Phase 1's hardware validation and CPU/GPU crossover gate is satisfied;
+Phase 2 is the next implementation step.
