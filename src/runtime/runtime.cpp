@@ -40,6 +40,25 @@ Runtime::Runtime(std::shared_ptr<const Dataset> dataset, RuntimeConfig config,
 
 Runtime::~Runtime() { shutdown(); }
 
+void Runtime::set_policy(Policy policy) {
+    (void)policy_name(policy); // Reject invalid enum values.
+    if(policy != Policy::CpuLatency && !gpu_) throw std::invalid_argument("Policy requires a GPU backend");
+    policy_.store(policy, std::memory_order_relaxed);
+}
+
+std::future<Completion> Runtime::submit(Query query) {
+    Route route=Route::Cpu;
+    switch(policy()) {
+        case Policy::CpuLatency: break;
+        case Policy::GpuImmediate: route=Route::GpuImmediate; break;
+        case Policy::GpuBatch: route=Route::GpuBatch; break;
+        case Policy::Balanced:
+            route=balanced_sequence_.fetch_add(1,std::memory_order_relaxed)%2 ? Route::GpuImmediate : Route::Cpu;
+            break;
+    }
+    return submit(std::move(query),route);
+}
+
 std::future<Completion> Runtime::submit(Query query, Route route) {
     const auto submitted = Clock::now();
     validate_query(*dataset_, query);
@@ -48,6 +67,7 @@ std::future<Completion> Runtime::submit(Query query, Route route) {
     if (route != Route::Cpu && !gpu_) throw std::invalid_argument("Runtime has no GPU backend");
     std::unique_lock lock(mutex_);
     if (stopping_) { ++stats_.rejected; throw RuntimeStopped(); }
+    telemetry_.arrival(Clock::now()); // Valid offered traffic includes queue-full rejection.
     const auto queued = cpu_queue_.size() + gpu_queue_.size();
     if (queued >= config_.queue_capacity) { ++stats_.rejected; throw QueueFull(); }
     Job job{std::move(query), route, next_id_, submitted, {}};
@@ -83,6 +103,16 @@ RuntimeSnapshot Runtime::snapshot() const {
     return result;
 }
 
+RuntimeStats Runtime::telemetry() const {
+    std::lock_guard lock(mutex_);
+    RuntimeStats result;
+    result.windows=telemetry_.snapshot(Clock::now());
+    result.queue_depth=cpu_queue_.size()+gpu_queue_.size();
+    result.pending_gpu_jobs=gpu_queue_.size()+stats_.gpu_inflight;
+    result.gpu_available=has_gpu();
+    return result;
+}
+
 void Runtime::complete(Job& job, SearchResult result, Clock::time_point started, Clock::time_point ended,
                        std::size_t batch_size, std::optional<DeviceTimings> timings, std::exception_ptr error) {
     std::optional<Completion> completion;
@@ -104,6 +134,10 @@ void Runtime::complete(Job& job, SearchResult result, Clock::time_point started,
         // Keep the separate backend endpoint for execution_ms.
         const auto latency_ms = milliseconds(Clock::now() - job.submitted);
         stats_.total_latency_ms += latency_ms;
+        const auto metric=job.route==Route::GpuBatch ? MetricBackend::CudaBatch :
+            job.route==Route::GpuImmediate ? MetricBackend::Cuda :
+            cpu_name_=="avx2" ? MetricBackend::Simd : MetricBackend::Scalar;
+        telemetry_.completion(Clock::now(),metric,latency_ms,error!=nullptr);
         if (completion) completion->latency_ms = latency_ms;
     }
     // Fulfill exactly once, outside the backend-error catch blocks and queue lock.
@@ -168,6 +202,7 @@ void Runtime::gpu_loop() {
         {
             std::lock_guard stats_lock(mutex_);
             stats_.last_device_timings = error ? std::nullopt : batch.device_timings;
+            if(!error) telemetry_.gpu_batch(Clock::now(),count);
             if (!error && batch.device_timings) {
                 ++stats_.timed_gpu_batches;
                 stats_.total_device_timings.upload_ms += batch.device_timings->upload_ms;

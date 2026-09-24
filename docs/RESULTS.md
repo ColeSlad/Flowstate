@@ -2,9 +2,9 @@
 
 ## Status
 
-Phases 1 and 2 are complete: scalar, AVX2, and CUDA correctness checks pass,
+Phases 1–3 are complete: scalar, AVX2, and CUDA correctness checks pass,
 the measurements below demonstrate a CPU/GPU crossover, and concurrent runtime
-batching improves burst throughput. Heuristic and Jev evaluations remain pending.
+batching improves burst throughput. The heuristic responds to workload changes; the live Jev comparison remains pending.
 
 ## Scalar baseline — 2026-09-23
 
@@ -226,3 +226,99 @@ Phase 2 validation and review:
   stopped at backend completion. The timestamp now includes completion work and
   earlier batch publications, with regression coverage. The benchmark above was
   rerun after this fix. No unresolved review findings remain.
+
+
+## Adaptive workload trace — 2026-09-24
+
+Same Razer hardware and Release toolchain as above, now with NVML 13.2 headers
+and the WSL NVIDIA driver library. Source is the Phase 3 working tree based on
+`ce3ab45`, with real NVML sampling enabled. Every mode uses 100k × 384, seed 42,
+two AVX2 workers, queue capacity 1,024, batch maximum 32, and a 2 ms timeout.
+Three warmup batches run on each backend instance before runtime creation.
+
+The unchanged `benchmarks/traces/adaptive.csv` schedules 8,040 queries over 20 s:
+4 s at 10 QPS (K=10), 6 s at 1,200 QPS in bursts of 32 (K=10), 5 s at 150 QPS
+(K=50), then 5 s at 10 QPS (K=10). Each mode receives the same generated queries
+and intended arrival times. Measurements include the final drain. Summary
+percentiles use exact nearest-rank samples, not the rolling histogram estimates.
+SLO violations count offered latency over 15 ms plus every rejected/failed query.
+
+| Mode | Completed / offered | Rejected | QPS | p50 ms | p95 ms | p99 ms | SLO violations |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Static AVX2 | 3,335 / 8,040 | 4,705 | 166.7 | 3,484.386 | 4,129.681 | 4,143.897 | 7,972 |
+| Static GPU immediate | 8,040 / 8,040 | 0 | 402.0 | 401.295 | 732.027 | 750.977 | 7,319 |
+| Static GPU batch | 8,040 / 8,040 | 0 | 402.0 | 24.412 | 39.561 | 54.262 | 7,203 |
+| Heuristic | 8,040 / 8,040 | 0 | 402.0 | 25.248 | 785.455 | 2,011.002 | 7,200 |
+
+No backend failures or controller errors occurred. All modes that completed the
+full trace have matching result checksums. The CPU checksum differs because
+4,705 requests were rejected. Observed p99 including producer lateness was
+4,144.032 / 751.051 / 54.331 / 2,011.106 ms in table order. Maximum producer
+lateness was 11.58 / 5.81 / 21.71 / 0.97 ms; it is not hidden in runtime latency.
+
+The heuristic made four transitions, visible in the 500 ms telemetry stream:
+
+| Observed elapsed | Phase | Selected policy | 1 s arrival rate | Queue depth |
+| ---: | --- | --- | ---: | ---: |
+| 0 s | Low | CPU latency | 0 | 0 |
+| 4.50 s | Burst | GPU batch | 612 | 500 |
+| 11.00 s | Moderate | Balanced | 145 | 0 |
+| 15.50 s | Low return | GPU immediate | 76 | 0 |
+| 16.00 s | Low return | CPU latency | 9 | 0 |
+
+It routed 991 queries to CPU and 7,049 to GPU. The first 500 ms of burst traffic
+queued on CPU before the controller switched. Those accepted requests retain
+their routes and explain the long tail; later GPU requests complete much sooner.
+Static GPU batching is clearly better for tail latency on this large dataset.
+Throughput ties among modes that serve all traffic because the trace's average
+offered rate is 402 QPS. This run demonstrates adaptation, not a throughput win
+for the heuristic or a satisfied 15 ms SLO. No thresholds were tuned to reverse
+that result. Queue migration, hysteresis, and learned predictors remain out of
+scope for the current phases.
+
+Sampled system utilization (mean of available readings, including idle periods):
+
+| Mode | CPU mean | GPU mean | GPU utilization samples | Maximum observed queue |
+| --- | ---: | ---: | ---: | ---: |
+| Static AVX2 | 6.75% | 0.57% | 21/41 | 1,023 |
+| Static GPU immediate | 2.06% | 26.34% | 41/41 | 824 |
+| Static GPU batch | 2.05% | 28.56% | 41/41 | 1 |
+| Heuristic | 4.32% | 24.12% | 41/41 | 500 |
+
+CPU is whole-system utilization over the 20 WSL logical CPUs, not the fraction
+of two workers occupied. The heuristic has 40 CPU samples because its first
+reading has no prior counter delta. NVML intermittently returned no GPU
+utilization reading during the CPU run; these entries stay empty and are excluded
+from the mean. Free GPU memory was available in all sampled rows (about 15.81 GB).
+There was no injected GPU contention. Actual contention testing belongs to the
+later demo/evaluation work; a pure scheduler test covers the high-utilization
+branch without presenting test inputs as measured telemetry.
+
+```sh
+python3 benchmarks/run_load.py --binary build-gpu/flowstate_load \
+  --cuda on --cpu-backend avx2 --output benchmark-output/phase3-100k \
+  --label 'Razer; WSL2; NVML enabled'
+```
+
+The runner stores all four summaries, sampled telemetry, exact trace/hash,
+commands, compiler flags, hardware, and Git state in the ignored output directory
+on both hosts. One serial run per mode, in the table's order, is reported. This
+is a short controlled trace with uncontrolled desktop load and clock speeds;
+it is not a confidence interval or a universal comparison of schedulers.
+An earlier development run lacked NVML detection and was retained separately;
+the table reports the complete rerun after the detection fix.
+
+Phase 3 validation:
+
+- All eight CUDA Release CTest tests pass without skips. CPU ASan, UBSan, and
+  TSan suites pass; TSan still uses the documented per-process ASLR workaround.
+- New tests exercise histogram bounds, window expiry/reuse, missing readings,
+  policy parsing, invalid thresholds, all heuristic branches, policy switching
+  with queued work, concurrent telemetry reads, and trace validation.
+- Native ARM Release tests pass with AVX2/CUDA explicitly skipped. A short CPU
+  trace completes all 606 requests under static and heuristic modes with matching
+  checksums and no rejections/errors.
+- Manual phase review checked bounded telemetry memory, atomic routing, controller
+  lifetime, NVML identity matching, overload accounting, and benchmark timing.
+  Fixed WSL's versioned NVML library discovery and a ready-future collection
+  iterator invalidation before the final measurements. No unresolved findings.

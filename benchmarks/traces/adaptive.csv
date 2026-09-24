@@ -1,0 +1,5 @@
+name,duration_ms,requests_per_second,burst,top_k
+low,4000,10,1,10
+burst,6000,1200,32,10
+moderate,5000,150,1,50
+low_return,5000,10,1,10

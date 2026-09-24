@@ -79,7 +79,46 @@ remain absent. No telemetry reader accesses CUDA resources directly.
 
 ## Control-plane boundary
 
-Phase 3 will add rolling telemetry and native scheduling policies.
+Phase 3 adds an atomic policy to `Runtime`: CPU, immediate GPU, GPU batch, or a
+50/50 alternating CPU/immediate-GPU split. A submission reads one policy and
+stores a concrete route; policy changes never migrate queued or in-flight jobs.
+Explicit route submission remains available. CPU always uses AVX2 when supported.
+
+`HeuristicController` owns one joinable control thread. Every 500–2,000 ms it
+reads a bounded runtime summary and samples system counters, then stores one
+policy. Default precedence is: unavailable GPU or measured free memory below
+64 MiB → CPU; rate ≤25 QPS with queue <16 → CPU; measured GPU use ≥90% → balanced;
+queue ≥16 or rate ≥300 → GPU batch; rate ≥80 or measured CPU use ≥50% → balanced;
+otherwise immediate GPU. Thresholds live in `HeuristicConfig`. Absent system
+metrics are skipped, not filled with fabricated values. This is a transparent
+baseline, not an optimized scheduler or evidence that adaptive routing always wins.
+
+`RollingTelemetry` uses 300 reusable 100 ms buckets, about 2.5 MB per runtime.
+Each contains counters and four fixed 256-bin logarithmic latency histograms.
+No request history grows with traffic. Arrival counters include valid queue-full
+attempts; completion counters include failures, while latency/throughput use
+successful completions. The 1/5/30-second windows divide rates by their full
+window length, including empty startup history. Boundary resolution is 100 ms;
+percentiles round upward by at most 10%, with a 1 microsecond first bin and an
+overflow bin. Snapshot aggregation shares the queue mutex, so sampling has a
+small synchronization cost that is included in load measurements.
+
+System sampling runs only in the control plane. Linux CPU use comes from deltas
+in `/proc/stat`. Optional NVML resolves CUDA device 0 by PCI identity, then asks
+for utilization and free device memory. Unsupported calls leave optional fields
+empty. NVML availability is a build-time capability; its readings are neither
+required for CPU-only execution nor substituted with synthetic values. See the
+[NVIDIA device query reference](https://docs.nvidia.com/deploy/nvml-api/api/group__nvmlDeviceQueries.html).
+Controller snapshots include their sampling time, transitions, and errors. Stop
+and destroy the controller before the runtime it references.
+
+The load generator schedules bounded CSV phases independently of completions,
+collects ready futures without waiting on the oldest one, and records queue-full
+rejections. It retains a bounded maximum of two million latency samples for exact
+benchmark percentiles. Producer lateness is measured against each burst's intended
+arrival time; offered-latency/SLO reporting includes it. Queries have a fixed
+vector dimension per dataset, while traces can change top-K. No synthetic GPU
+contention or fabricated utilization is used.
 Phase 4 will run Jev periodically over bounded summaries, with timeouts and
 heuristic fallback; no Jev call will execute or block individual queries.
 Phase 5 will expose telemetry to a dashboard independently of runtime correctness.

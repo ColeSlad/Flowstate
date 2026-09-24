@@ -3,19 +3,25 @@
 Flowstate is a C++20 exact dot-product vector search project, being built toward
 an adaptive CPU/CUDA runtime. It implements deterministic datasets, scalar and
 AVX2 search, CUDA search, a bounded concurrent runtime, GPU microbatching,
-correctness tests, and reproducible benchmarks.
+rolling telemetry, heuristic scheduling, and reproducible benchmarks.
 
 **Phase 1 is complete.** Scalar, AVX2, and CUDA pass correctness tests on an
 i9-12900H / RTX 3080 Ti Laptop GPU under WSL 2. A measured crossover favors AVX2
 for a small single query and CUDA for batches of the same workload. **Phase 2 is
-complete:** concurrent submission, shutdown, and GPU batching are validated;
-batching improves throughput in both measured burst workloads.
+complete:** concurrent submission, shutdown, and GPU batching are validated.
+**Phase 3 is complete:** live workload changes trigger CPU, GPU batch, balanced,
+and immediate-GPU policies. Static GPU batching has better tail latency than the
+heuristic on the recorded default trace; results include that limitation.
 See [progress](PROGRESS.md), [results](docs/RESULTS.md), and the
 [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
 
 ```mermaid
 flowchart LR
     Submit[Async submission] --> Queue[Bounded CPU / GPU queues]
+    Control[Heuristic controller / 500 ms] --> Policy[Atomic policy]
+    Policy --> Submit
+    Queue --> Telemetry[Rolling telemetry]
+    Telemetry --> Control
     Queue --> CPU[Fixed CPU workers]
     Queue --> GPU[Single GPU worker / microbatcher]
     CPU --> Backend[Backend interface]
@@ -148,13 +154,67 @@ batching using repeated bursts. CSV includes throughput, request p50/p95/p99,
 queue wait, observed batch size, flush counts, and kernel time per batch.
 Requests must fit the configured queue capacity for this burst benchmark.
 
+## Adaptive scheduling and traffic traces
+
+`HeuristicController` samples every 500 ms (configurable up to 2 seconds) and
+sets one of four policies. `submit(query)` uses that choice; the explicit route
+overload remains available for benchmarks. Construct the controller after the
+runtime and destroy/stop it before destroying the runtime.
+
+```cpp
+#include "flowstate/scheduler.hpp"
+flowstate::HeuristicController controller(runtime);
+auto future = runtime.submit(query);
+// ...
+controller.stop();
+runtime.shutdown();
+```
+
+Policies select CPU, immediate GPU, GPU batching, or a deterministic 50/50 split
+between CPU and immediate GPU. Queued and in-flight jobs keep their original
+routes. Central `HeuristicConfig` thresholds consider offered traffic, queue
+pressure, and available system readings. Without a GPU, the controller stays on
+CPU. Missing utilization does not prevent decisions from measured traffic/queues.
+
+```sh
+python3 benchmarks/run_load.py --binary build-gpu/flowstate_load \
+  --cuda on --cpu-backend avx2 --trace benchmarks/traces/adaptive.csv \
+  --output benchmark-output/adaptive
+
+# Portable CPU-only comparison:
+python3 benchmarks/run_load.py --cuda off --modes cpu_latency heuristic \
+  --vectors 1000 --output benchmark-output/cpu-load
+```
+
+Trace CSV specifies phase name, duration, average offered requests/sec, burst
+size, and top-K. Dimension and dataset size are configurable per run; top-K
+varies real selection work within a trace. Queries and arrival schedules use the
+same seed/trace across policies. The default 20-second trace moves from 10 QPS to
+1,200 QPS in bursts of 32, then 150 QPS with K=50, and returns to 10 QPS.
+
+The runner saves configuration, trace contents/hash, compiler and hardware
+metadata, per-mode summary CSV, and telemetry every 500 ms. Summary percentiles
+are exact nearest-rank samples. It records producer lateness separately and
+includes that lateness in offered p99 and SLO violations; rejected/failed queries
+also count as violations. Throughput includes the final drain. Use `flowstate_load --help` for rate thresholds and runtime configuration. Traces are bounded to one
+hour and two million requests for measurement storage.
+
+Runtime telemetry covers rolling 1/5/30-second rates and latency distributions.
+Its bounded histograms report percentile upper bounds with at most 10% rounding
+and a 1 microsecond floor; window boundaries have 100 ms resolution. These are
+separate from the benchmark's exact percentiles. CPU utilization reads Linux
+`/proc/stat`; CUDA builds use optional NVML for GPU utilization and free memory.
+Install NVML headers and the driver library to enable those readings. Unsupported
+readings and backend percentiles with no samples remain absent (empty CSV cells).
+macOS CPU utilization is currently unavailable. System utilization includes other
+processes and is distinct from runtime worker occupancy.
+
 ## Remaining phases
 
-The remaining phases add rolling telemetry, heuristic scheduling, Jev, and a
-lightweight browser dashboard. The native **data plane** owns all request
+The remaining phases add Jev and a lightweight browser dashboard. The native **data plane** owns all request
 execution. Jev will be a periodic
 **control plane** policy selector, outside the request hot path, with heuristic
-fallback. Adaptive policy selection and the dashboard are not implemented yet.
+fallback. Jev and the dashboard are not implemented yet.
 
 Current technical concerns are floating-point reduction differences, safe SIMD
 dispatch, GPU resource lifetime, and measuring total result latency alongside

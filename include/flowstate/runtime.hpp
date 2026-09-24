@@ -1,6 +1,8 @@
 #pragma once
 
 #include "flowstate/backend.hpp"
+#include "flowstate/policy.hpp"
+#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <deque>
@@ -76,10 +78,14 @@ public:
     Runtime(const Runtime&) = delete;
     Runtime& operator=(const Runtime&) = delete;
 
-    std::future<Completion> submit(Query query, Route route = Route::Cpu);
+    std::future<Completion> submit(Query query); // Routes using the current policy.
+    std::future<Completion> submit(Query query, Route route);
+    void set_policy(Policy policy);
+    [[nodiscard]] Policy policy() const { return policy_.load(std::memory_order_relaxed); }
     // Idempotent and safe for concurrent callers. Drain accepted jobs, then join.
     void shutdown();
     [[nodiscard]] RuntimeSnapshot snapshot() const;
+    [[nodiscard]] RuntimeStats telemetry() const;
     [[nodiscard]] bool has_gpu() const { return gpu_ != nullptr; }
 private:
     using Clock = std::chrono::steady_clock;
@@ -106,6 +112,9 @@ private:
     bool stopping_ = false;
     std::uint64_t next_id_ = 1;
     RuntimeSnapshot stats_;
+    RollingTelemetry telemetry_;
+    std::atomic<Policy> policy_{Policy::CpuLatency};
+    std::atomic<std::uint64_t> balanced_sequence_{0};
     // Reserved before threads start; only the GPU worker accesses this scratch space.
     std::vector<Job> gpu_jobs_;
     std::vector<Query> gpu_queries_;
