@@ -64,6 +64,21 @@ p99 here is the nearest-rank sample statistic.
   Added per-test timeouts after the ASan startup stall. No unresolved CPU
   correctness findings; CUDA review cannot substitute for compilation/execution.
 
+## Remote validation environment
+
+SSH access to the Razer validation host was established on 2026-09-23. It has an
+Intel Core i9-12900H (14 cores, 20 logical processors), approximately 32 GB system
+RAM, and an NVIDIA GeForce RTX 3080 Ti Laptop GPU with 16 GB VRAM. Windows 11 Home
+build 26200 reports NVIDIA driver 596.21. The CUDA 13.2 version reported by
+`nvidia-smi` describes driver support; it does not establish toolkit installation.
+
+No compiler, CMake, CUDA toolkit, or WSL installation was found. The user approved
+installation of WSL 2, Ubuntu 24.04, and the build tools. WSL 2.7.14 was installed
+using the Microsoft-signed MSI, and Virtual Machine Platform was enabled with
+automatic restart disabled. Windows reports a required restart. Ubuntu and the
+C++/CUDA toolchain still need installation afterward; remote correctness tests
+and benchmarks have not run yet.
+
 ## Required next validation
 
 On an x86-64 AVX2 host with an NVIDIA GPU and a C++20 CUDA toolkit:
