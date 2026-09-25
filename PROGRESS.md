@@ -1,19 +1,20 @@
 # Progress
 
 ## Current Phase
-Phase 5 — Dashboard and polish
+Complete — all five phases implemented, measured, and reviewed.
 
 ## Completed
 - [x] Phase 1 — Compute backends
 - [x] Phase 2 — Runtime
 - [x] Phase 3 — Adaptive scheduling
 - [x] Phase 4 — Local Laya integration
-- [ ] Phase 5 — Dashboard and polish
+- [x] Phase 5 — Dashboard and polish
 
 ## Current Notes
-- The source spec records the user-approved Jev → local Laya amendment. Canonical origin is verified.
-- Scalar/AVX2/CUDA correctness, bounded concurrency, GPU batching, rolling telemetry, and heuristic routing are validated on the Razer i9-12900H / RTX 3080 Ti Laptop under WSL2.
-- Phase 4: ten CUDA Release tests pass; Linux CPU ASan/UBSan/TSan and Mac Release/UBSan pass. TSan uses per-process `setarch -R`; prior WDDM Compute Sanitizer and Mac ASan limitations remain documented.
-- The Phase 4 independent review found no actionable regressions. Live inference, token-budget rejection, unavailable-service fallback, and an ungated diagnostic are validated.
-- Four CPU inference threads average 527 ms in isolation. Default-gated Laya fell back on all 11 trace decisions and underperformed the heuristic. Ungated Laya chose GPU batching throughout, performing similarly to static batching. Full measurements and limitations are in `docs/RESULTS.md`.
-- Next: lightweight realtime browser dashboard, three demo controls, real GPU contention, final review and polish.
+- Canonical origin is `git@github.com:ColeSlad/Flowstate.git`. The source spec records the user-approved Jev → local Laya amendment.
+- Scalar/AVX2/CUDA equivalence, bounded concurrency, microbatching, telemetry, and routing are validated on the Razer i9-12900H / RTX 3080 Ti Laptop under WSL2.
+- All 12 CUDA Release tests pass without skips. Linux CPU ASan/UBSan/TSan pass with dashboard and Laya enabled; Mac CPU Release passes with Laya on/off. Prior Mac ASan and WDDM Compute Sanitizer limits remain documented.
+- Desktop/phone browser checks pass, including control validation, server restart, stream-limit recovery, cached-page lifecycle handlers, and custom startup top-K. Three final-review findings are fixed and regression-tested.
+- The real GPU demo shows CPU → GPU batching → balanced → CPU, with a brief batching phase while draining. Measured GPU contention reaches 100%; overload rejections remain visible. Live local-model confidence/fallback display is also validated.
+- Default-gated Laya underperformed the heuristic and fell back on all 11 evaluation decisions. Ungated Laya always chose GPU batching and performed similarly to static batching. The native heuristic remains the demo default; static batching won the recorded trace.
+- Build/run instructions, demo sequence/screenshot, complete results, and limitations are in `README.md` and `docs/`. No remaining spec blockers or unresolved review findings.

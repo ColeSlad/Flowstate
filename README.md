@@ -1,21 +1,18 @@
 # Flowstate
 
-Flowstate is an adaptive C++20/CUDA runtime for exact dot-product vector search. It implements deterministic datasets, scalar and
-AVX2 search, CUDA search, a bounded concurrent runtime, GPU microbatching,
-rolling telemetry, heuristic scheduling, an optional local Laya controller, and
-reproducible benchmarks.
+Flowstate is an adaptive C++20/CUDA runtime for exact dot-product vector search.
+It combines scalar and AVX2 search, CUDA microbatching, bounded concurrency,
+rolling telemetry, native heuristic scheduling, and an optional local Laya policy
+controller. A realtime browser dashboard exposes the runtime and a small set of
+workload controls.
 
-**Phase 1 is complete.** Scalar, AVX2, and CUDA pass correctness tests on an
-i9-12900H / RTX 3080 Ti Laptop GPU under WSL 2. A measured crossover favors AVX2
-for a small single query and CUDA for batches of the same workload. **Phase 2 is
-complete:** concurrent submission, shutdown, and GPU batching are validated.
-**Phase 3 is complete:** live workload changes trigger CPU, GPU batch, balanced,
-and immediate-GPU policies. Static GPU batching has better tail latency than the
-heuristic on the recorded default trace; results include that limitation.
-**Phase 4 is complete:** pinned local Laya inference, bounded calls, confidence
-gating, fallback, and live comparison are validated.
-See [progress](PROGRESS.md), [results](docs/RESULTS.md), and the
-[source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
+All five phases are implemented and validated on an i9-12900H / RTX 3080 Ti Laptop
+under WSL 2. The measurements favor static GPU batching on the recorded trace;
+Laya adds inference overhead and remains experimental. See
+[results](docs/RESULTS.md), [architecture](docs/ARCHITECTURE.md),
+[progress](PROGRESS.md), and the [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
+
+![Live dashboard with real CUDA contention and balanced routing](docs/dashboard.png)
 
 ```mermaid
 flowchart LR
@@ -24,6 +21,8 @@ flowchart LR
     Policy --> Submit
     Queue --> Telemetry[Rolling telemetry]
     Telemetry --> Control
+    Telemetry --> SSE[Loopback HTTP / SSE]
+    SSE --> Browser[Vanilla browser dashboard]
     Queue --> CPU[Fixed CPU workers]
     Queue --> GPU[Single GPU worker / microbatcher]
     CPU --> Backend[Backend interface]
@@ -274,10 +273,100 @@ default-gated calls fell back; ungated Laya chose GPU batching throughout and
 performed similarly to static batching. The heuristic is the practical default.
 See the full [results](docs/RESULTS.md).
 
-## Remaining work
+## Launch the dashboard
 
-Phase 4 validation and review are complete. The lightweight realtime browser
-dashboard is next. [Architecture](docs/ARCHITECTURE.md) explains the
-control/data-plane boundary and runtime ownership.
+The dashboard is optional and uses pinned cpp-httplib 0.57.1 and nlohmann/json
+3.12.0 dependencies. There is no frontend build step or Node dependency at runtime.
+The default compute-only build fetches neither package.
 
-Demo video/GIF: pending the dashboard phase.
+```sh
+# CUDA demo; Laya can be enabled separately with -DFLOWSTATE_ENABLE_LAYA=ON.
+cmake -S . -B build-demo -DCMAKE_BUILD_TYPE=Release \
+  -DFLOWSTATE_ENABLE_CUDA=ON -DFLOWSTATE_ENABLE_DASHBOARD=ON
+cmake --build build-demo -j
+ctest --test-dir build-demo --output-on-failure
+./build-demo/flowstate_server --cuda on
+# Open http://127.0.0.1:8080
+```
+
+For a CPU-only preview, omit the CUDA CMake option and run with `--cuda off`.
+GPU controls and unavailable telemetry are disabled/marked unavailable. The server
+accepts `--vectors`, `--dimension`, `--top-k`, `--seed`, and `--port`; use `--help`
+for the short list. It warms the backends before listening. Keep the source tree
+available: web assets and the recorded comparison are loaded from their compiled
+source paths at startup. Restart the server after editing those files.
+
+The server binds only loopback. When it runs on another computer, forward the port
+with `ssh -N -L 18080:127.0.0.1:8080 USER@HOST` and open
+`http://127.0.0.1:18080`. WSL's Windows localhost forwarding was validated on the
+Razer. Stop with Ctrl-C; accepted search work drains before shutdown.
+
+To show Laya, enable `FLOWSTATE_ENABLE_LAYA`, start the local model service as
+above, then launch `flowstate_server --cuda on --controller laya`. The UI shows
+its last probability, call latency, fallback state, and counts. The native
+heuristic is the default controller for the short demo.
+
+### A 50-second demo
+
+1. **0–10 seconds:** leave traffic at Quiet. Explain that routing follows live
+   machine conditions; sparse queries normally use AVX2.
+2. **10–20 seconds:** select Burst. Watch queue pressure, the policy transition,
+   and completions shift toward GPU batches.
+3. **20–30 seconds:** enable GPU contention. A real competing CUDA kernel runs
+   in a separate stream. When measured utilization crosses the heuristic threshold,
+   new requests split between CPU and GPU.
+4. **30–40 seconds:** disable contention and select Quiet. Let the queue drain
+   and watch the CPU policy return.
+5. **40–50 seconds:** open the recorded comparison. Explain why static GPU
+   batching won this trace and why the local model is experimental.
+
+Traffic controls are best-effort targets of 10, 150, and 1,200 requests/sec;
+Incoming requests shows the measured rate. Results per query changes real top-K
+selection work without rebuilding the dataset. CPU/GPU bars show successful
+completions in the last second, while utilization covers the whole machine.
+Latency includes queue wait and uses the runtime's bounded histograms. Overload
+rejections and SLO misses remain visible. The comparison is explicitly labeled
+recorded data and never changes with the live controls.
+
+Actual transition times and utilization depend on hardware and background work;
+the dashboard does not synthesize measurements to match a script. The Razer demo
+observed CPU → GPU batching → balanced → GPU batching → CPU, including a brief
+batching transition while draining after contention. Browser disconnects do not
+stop the runtime. Controls disable while disconnected and reconnect automatically.
+
+Demo video/GIF: **placeholder** — the screenshot above is from the validated live
+GPU demo; follow the sequence above to record it.
+
+### Browser regression checks
+
+CTest covers HTTP/SSE, malformed controls, bounded client connections, GPU
+contention (CUDA build), and shutdown under load. An optional Chrome check also
+covers responsive layout, controls, custom startup top-K, cached-page lifecycle
+handlers, server restart, and recovery from the stream limit:
+
+```sh
+npm install --prefix /tmp/flowstate-browser --no-save playwright-core@1.63.0
+NODE_PATH=/tmp/flowstate-browser/node_modules \
+  node tests/browser_tests.cjs build-demo/flowstate_server
+```
+
+This check uses an installed Google Chrome and starts/stops its own CPU-only
+server. It does not require the demo or inference service to be running.
+
+## Technical challenges and limits
+
+- Equivalent ranked results across scalar, SIMD, and CUDA reductions, including
+  scalar tails and floating-point ties.
+- Bounded admission, promise ownership, timed batch flushes, and orderly shutdown
+  while work and telemetry readers are active.
+- Keeping network/model work on a slow control thread while native workers execute
+  independently; validating responses and falling back on every failure path.
+- Measuring queueing and overload honestly. Adaptive routing can create CPU
+  backlogs; a policy change does not move work that is already queued.
+- Separating browser connection lifetime from runtime lifetime. SSE clients and
+  HTTP queues are bounded; slow or disconnected viewers do not own search jobs.
+
+GPU top-K remains on the CPU, transfers use pageable host memory, and the runtime
+uses one GPU worker/stream. These are documented implementation limits, not claims
+of an optimized vector database. Benchmark setup, sanitizer limitations, and the
+independent review findings are recorded in [results](docs/RESULTS.md).

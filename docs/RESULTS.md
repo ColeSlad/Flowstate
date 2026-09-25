@@ -439,3 +439,70 @@ All ten Razer CUDA Release tests pass. Linux CPU ASan, UBSan, and TSan suites pa
 TSan uses per-process `setarch x86_64 -R`. Mac Release and UBSan suites pass on
 available backends. The default build with Laya disabled also builds and passes.
 Prior Mac ASan startup and WDDM Compute Sanitizer limitations remain as documented.
+
+## Browser dashboard and real contention — 2026-09-25
+
+The final demo uses the same Razer / WSL2 hardware, GCC 13.3 Release build,
+CUDA 13.2, 100,000 × 384 dataset, top-K 10, seed 42, two CPU workers, queue capacity
+1,024, and batches up to 32 / 2 ms. The native heuristic samples every 500 ms.
+Three warmup batches per backend precede server startup. Chrome on the Mac reads
+HTTP/SSE through an SSH loopback tunnel; there is no simulated telemetry.
+
+A browser-driven sequence captured 76 snapshots across quiet traffic (8 seconds),
+burst traffic (10 seconds), burst plus real CUDA contention (10 seconds), and
+quiet traffic with contention off (10 seconds). The competing workload launched
+1,970 kernels. Observed policies were CPU latency → GPU batching → balanced →
+GPU batching → CPU latency. The brief second batching phase drained backlog.
+
+| Stage | Observed behavior |
+| --- | --- |
+| Quiet | CPU policy; all completions on CPU; queue empty |
+| Burst | GPU batching; all completions on GPU by the end; queue peak 474 |
+| Burst + contention | Measured GPU use reached 100%; balanced policy; final one-second completions split 46% CPU / 54% GPU; queue reached its 1,024 limit |
+| Return to quiet | Queue drained; CPU policy and 100% CPU completions returned; final rolling p99 upper bound 7.78 ms |
+
+The demo is a behavior/lifecycle check, not a scheduler performance comparison.
+Overload produced 6,748 rejected queries, zero search failures, and a peak observed
+rolling p99 upper bound of 3,152 ms. These costs remain visible in the UI. It does
+not claim a 15 ms SLO under overload or reproduce the illustrative CPU percentages
+in the spec. After the scripted sequence, quiet traffic continued; shutdown later
+reported all 19,545 accepted requests completed with zero failures. Raw snapshots
+are in ignored `benchmark-output/dashboard/demo.json`; the committed
+[dashboard screenshot](dashboard.png) captures the contention stage.
+
+A separate real-model browser smoke check confirmed that the Laya panel displays
+actual maximum class probability, inference latency, and heuristic fallback.
+The captured response had probability 0.4336, 795 ms latency, and `low_confidence`
+status. All 16 decisions by that snapshot had fallen back (seven transport/model
+errors), while 310 search requests had completed without failure. This checks
+integration only; the controlled Phase 4 comparison remains the model evaluation.
+The model process was stopped after the check, and the default heuristic retained.
+
+### Final validation and review
+
+- All 12 Razer CUDA Release CTest tests pass without skips, including backend
+  equivalence, concurrent runtime, local-model failures, and real GPU contention.
+- Linux CPU ASan, UBSan, and TSan suites pass with both dashboard and Laya enabled:
+  nine executable tests pass, with the two CUDA tests explicitly skipped. This
+  includes the new HTTP/SSE/control/shutdown integration check. TSan uses the
+  previously documented per-process `setarch -R` workaround.
+- Mac CPU Release suites pass with the dashboard enabled, both with and without
+  Laya. AVX2/CUDA tests explicitly skip on ARM. JavaScript syntax checks pass.
+- Chrome checks pass at desktop and 390-pixel phone widths: controls, custom
+  startup top-K 20, table data, chart sizing, no horizontal page overflow, disabled
+  CUDA controls in CPU mode, disconnect/restart recovery, and stream-limit recovery.
+  Cached-page handlers are tested by dispatching the browser's persisted
+  `pagehide` / `pageshow` events; this does not claim full BFCache eligibility.
+- The real GPU demo verifies the contention switch in both directions, actual
+  kernel execution, utilization-driven policy changes, and return to quiet CPU
+  operation. Browser checks report no JavaScript exceptions.
+- The independent final `codex review --uncommitted` identified three frontend
+  issues: terminal EventSource errors did not retry, cached-page restoration did
+  not reconnect, and valid custom startup top-K was missing from the selector.
+  All three are fixed and covered by the browser regression check. A decorative
+  switch element that intercepted native checkbox clicks was also fixed and
+  verified in the real GPU demo. No unresolved review findings remain.
+
+The review sandbox could not run socket-based integration checks; those ran
+separately on both hosts. CPU sanitizers do not validate CUDA device memory;
+the existing WDDM Compute Sanitizer and Mac ASan limitations remain unchanged.

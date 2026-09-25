@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f1">
+  <title>Flowstate — Live runtime</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body data-connection="connecting">
+  <div class="page">
+    <header class="topbar">
+      <a class="wordmark" href="/" aria-label="Flowstate home"><svg viewBox="0 0 30 28" aria-hidden="true"><path d="M3 7h9c6 0 5 14 11 14h4M3 21h9c6 0 5-14 11-14h4"/><circle cx="3" cy="7" r="2"/><circle cx="27" cy="21" r="2"/></svg>flowstate<span class="wordmark-dot">.</span></a>
+      <div class="connection" id="connection" role="status"><span class="status-dot"></span><span id="connection-label">Connecting</span></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div><p class="eyebrow">HETEROGENEOUS COMPUTE / LIVE DEMO</p><h1>Work follows load.</h1><p class="lede">A runtime that watches the machine and changes how your searches run.</p></div>
+        <div class="dataset"><span class="small-label">EXACT VECTOR SEARCH</span><strong id="dataset-shape">Waiting for runtime</strong><span id="dataset-backends">CPU + GPU execution</span></div>
+      </section>
+
+      <fieldset class="controls" id="controls" disabled>
+        <legend class="sr-only">Demo controls</legend>
+        <div class="control-group traffic-group"><span class="control-label" id="traffic-label">01 <span>Traffic level</span></span><div class="segmented" role="group" aria-labelledby="traffic-label"><button type="button" data-traffic="low" aria-pressed="true">Quiet <span>10/s</span></button><button type="button" data-traffic="steady" aria-pressed="false">Steady <span>150/s</span></button><button type="button" data-traffic="burst" aria-pressed="false">Burst <span>1,200/s</span></button></div></div>
+        <div class="control-group"><label class="control-label" for="top-k">02 <span>Results per query</span></label><select id="top-k"><option value="1">1 result</option><option value="10" selected>10 results</option><option value="50">50 results</option></select><span class="control-note">Changes top-K selection work</span></div>
+        <div class="control-group contention-group"><label class="control-label" for="contention">03 <span>GPU contention</span></label><label class="switch-label"><input type="checkbox" id="contention" role="switch"><span class="switch-track" aria-hidden="true"></span><span id="contention-label">Competing workload off</span></label><span class="control-note" id="contention-note">Runs a real competing CUDA kernel</span></div>
+      </fieldset>
+      <p class="control-feedback" id="control-feedback" role="alert"></p>
+
+      <section class="metrics" aria-label="Live runtime metrics">
+        <article><p>Incoming requests <span class="metric-unit">/ sec</span></p><strong id="arrival" class="live-value">—</strong><small><span id="throughput">—</span> completed / sec</small></article>
+        <article><p>Queue depth <span class="metric-unit">requests</span></p><strong id="queue" class="live-value">—</strong><small><span id="gpu-pending">—</span> pending on GPU</small></article>
+        <article><p>p95 latency <span class="metric-unit">ms</span></p><strong id="p95" class="live-value">—</strong><small>95% of searches finish within this</small></article>
+        <article><p>p99 latency <span class="metric-unit">ms</span></p><strong id="p99" class="live-value">—</strong><small>Target <span id="slo">15</span> ms · includes queue wait</small></article>
+      </section>
+
+      <div class="runtime-grid">
+        <section class="panel routing-panel" aria-labelledby="routing-title">
+          <div class="panel-heading"><h2 id="routing-title">Where the work goes</h2><span class="small-label">LAST 1 SECOND</span></div>
+          <div class="route-path" aria-hidden="true"><span class="input-node">QUERIES</span><span class="route-line"></span><span class="scheduler-node">SCHEDULER</span><span class="route-line"></span><span class="output-node">EXECUTION</span></div>
+          <div class="backend cpu-backend"><div class="backend-heading"><div><span class="backend-dot"></span><strong>CPU</strong><span class="backend-kind" id="cpu-kind">AVX2</span></div><strong class="backend-share" id="cpu-share">—</strong></div><div class="bar-track"><div class="bar-fill" id="cpu-bar"></div></div><div class="backend-foot"><span><b id="cpu-requests">—</b> searches completed</span><span>Utilization <b id="cpu-util">Unavailable</b></span></div></div>
+          <div class="backend gpu-backend"><div class="backend-heading"><div><span class="backend-dot"></span><strong>GPU</strong><span class="backend-kind" id="gpu-kind">CUDA</span></div><strong class="backend-share" id="gpu-share">—</strong></div><div class="bar-track"><div class="bar-fill" id="gpu-bar"></div></div><div class="backend-foot"><span><b id="gpu-requests">—</b> searches completed</span><span>Utilization <b id="gpu-util">Unavailable</b></span></div></div>
+          <div class="routing-foot"><span>Mean GPU batch <b id="batch-size">—</b></span><span>Free GPU memory <b id="gpu-memory">Unavailable</b></span></div>
+        </section>
+
+        <section class="panel policy-panel" aria-labelledby="policy-title">
+          <div class="panel-heading"><h2 id="policy-title">Current policy</h2><span class="policy-light" aria-hidden="true"></span></div>
+          <span class="controller-badge" id="controller-kind">Waiting for controller</span>
+          <h3 id="policy-name" class="live-value">—</h3><p id="policy-description">The controller selects how new requests execute.</p>
+          <div class="model-status" id="model-status" hidden><div><span title="Maximum class probability; not calibrated scheduling accuracy">Model confidence</span><strong id="confidence">—</strong></div><p id="model-detail">Awaiting local inference</p></div>
+          <div class="policy-history"><span class="small-label">POLICY TRANSITIONS <b id="change-count">0</b></span><ol id="transitions"><li class="empty-history">Waiting for the first decision</li></ol></div>
+        </section>
+      </div>
+
+      <section class="panel chart-panel" aria-labelledby="latency-title">
+        <div class="panel-heading"><div><h2 id="latency-title">Latency over time</h2><p class="chart-note">Rolling one-second percentiles · last 60 seconds</p></div><div class="legend"><span><i class="p95-key"></i>p95</span><span><i class="p99-key"></i>p99</span><span><i class="slo-key"></i>15 ms target</span></div></div>
+        <svg class="latency-chart" id="latency-chart" viewBox="0 0 1000 210" role="img" aria-labelledby="chart-description"><title id="chart-description">Waiting for live latency samples</title><g id="chart-grid"></g><path id="slo-line"/><path id="p95-line"/><path id="p99-line"/><text id="chart-empty" x="500" y="100" text-anchor="middle">Waiting for samples</text></svg>
+        <div class="chart-foot"><span>Percentiles are histogram upper bounds, rounded by at most 10%.</span><span><b id="rejected">0</b> rejected · <b id="failures">0</b> failed · <b id="violations">0</b> SLO misses since start</span></div>
+      </section>
+
+      <details class="comparison panel">
+        <summary><div><span class="eyebrow">RECORDED BENCHMARK / NOT LIVE DATA</span><h2>Same workload. Five scheduling strategies.</h2></div><span class="expand-mark" aria-hidden="true">+</span></summary>
+        <div class="comparison-body"><p id="comparison-setup">Loading recorded measurements…</p><div class="table-scroll"><table><thead><tr><th scope="col">Strategy</th><th scope="col">Completed / sec</th><th scope="col">p99 latency</th><th scope="col">Rejected</th><th scope="col">SLO misses</th></tr></thead><tbody id="comparison-rows"></tbody></table></div><p class="comparison-note">Static GPU batching performed best on this trace. Default-gated Laya fell back on all 11 decisions: nine low-confidence responses and two timeouts. An ungated diagnostic chose GPU batching throughout and performed similarly to static batching.</p><p class="fine-print">Single runs, 8,040 offered queries each. Percentiles cover successful requests; SLO misses include rejected requests. Adaptive controllers used a 2-second interval. These measurements do not establish a general scheduling speedup.</p></div>
+      </details>
+    </main>
+    <footer><span>Flowstate <span class="footer-separator">/</span> C++20 · SIMD · CUDA</span><span id="runtime-note">Live measurements from your runtime</span><a href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noreferrer">View source ↗</a></footer>
+  </div>
+</body>
+</html>

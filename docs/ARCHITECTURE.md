@@ -151,4 +151,44 @@ score. It is not a calibrated scheduling accuracy estimate. Native heuristic
 fallback and all scheduling limits remain authoritative. Snapshots record call,
 fallback, and error counts, latest confidence/status, total/maximum call latency,
 and applied policy transitions. Raw responses are never logged by the runtime.
-Phase 5 will expose telemetry independently of runtime correctness.
+
+## Browser demo and HTTP boundary
+
+`flowstate_server` composes the existing runtime and controller with a small demo
+load generator. It creates a deterministic pool of 32 queries, warms each backend
+three times, then starts a joinable generator thread. Three controls change
+traffic, top-K, and real GPU contention. Submission remains bounded by the runtime;
+ready futures are collected without waiting on an older request. Traffic is a
+best-effort interactive target, separate from the repeatable trace benchmark.
+
+The generator publishes a cached JSON snapshot every 500 ms. It includes rolling
+one-second runtime counters, independent system samples, and the last controller
+snapshot with its age. Missing values remain JSON null. HTTP readers copy the
+snapshot under a short mutex; serialization, socket writes, and inference never
+hold the runtime queue lock. The runtime keeps executing with no browser connected.
+
+Pinned cpp-httplib provides loopback HTTP and SSE, with eight fixed HTTP workers,
+a queue of 16 connections, and at most four event streams. Stream slots use RAII;
+closing or failing a stream releases its slot. Read/write timeouts bound stalled
+clients. Requests check local Host/Origin, bound JSON bodies and nesting, and
+validate the three control fields. Static assets and the recorded Phase 4
+comparison are read at startup. There is no custom HTTP or TLS implementation.
+
+The browser keeps at most 125 chart samples and six observed policy transitions.
+It disables controls on disconnect, uses native EventSource reconnection, and
+recreates terminally closed streams with capped retry backoff. Page-hide closes
+the stream and page-show restores it. The chart breaks across missing telemetry;
+recorded benchmark data remains visibly separate from the live snapshot.
+
+The demo-only contention object owns a separate nonblocking CUDA stream, a small
+device buffer, and a joinable thread. While enabled it repeatedly launches a
+compute kernel and synchronizes its own stream, competing for real GPU resources.
+It never touches search buffers or fabricates utilization. Errors disable the
+contender and appear in telemetry. CPU-only builds use a stub and reject enabling
+contention.
+
+SIGINT/SIGTERM only set a lock-free atomic flag. A monitor thread stops admission
+to HTTP and wakes the demo; HTTP workers join before their captured state dies.
+The generator joins, the controller stops, the contention thread stops and releases
+its CUDA resources, and the runtime drains accepted searches. The final process
+status checks that every accepted request completed without a search failure.
