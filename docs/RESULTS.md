@@ -2,9 +2,10 @@
 
 ## Status
 
-Phases 1–3 are complete: scalar, AVX2, and CUDA correctness checks pass,
+Phases 1–4 are complete: scalar, AVX2, and CUDA correctness checks pass,
 the measurements below demonstrate a CPU/GPU crossover, and concurrent runtime
-batching improves burst throughput. The heuristic responds to workload changes; the live Jev comparison remains pending.
+batching improves burst throughput. The heuristic responds to workload changes. Local Laya integration and evaluation
+are complete; its limitations and the static GPU baseline advantage are reported below.
 
 ## Scalar baseline — 2026-09-23
 
@@ -322,3 +323,119 @@ Phase 3 validation:
   lifetime, NVML identity matching, overload accounting, and benchmark timing.
   Fixed WSL's versioned NVML library discovery and a ready-future collection
   iterator invalidation before the final measurements. No unresolved findings.
+
+## Local Laya controller — 2026-09-25
+
+The user replaced hosted Jev with local Laya. Evaluation uses the same Razer,
+GCC 13.3 Release flags, CUDA 13.2 (`sm_86`), 100,000 × 384 dataset, seed 42,
+two runtime CPU workers, queue capacity 1,024, and GPU batches up to 32 with a
+2 ms wait. The existing 20-second trace offers 8,040 requests. Both adaptive
+controllers use a 2-second interval for this comparison (Phase 3 used 500 ms).
+Percentiles describe successful requests; rejected requests also count against
+the 15 ms offered-latency SLO. These are single trace runs, not confidence intervals.
+
+Inference uses Laya 0.3.20, PyTorch 2.14.0+cpu, Transformers 5.17.0, and the English
+`convaiinnovations/laya` checkpoint at
+`55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`. The local service is warmed with three
+requests before the load run; each native backend also receives three warmup
+batches. The service remains resident but idle for the static/heuristic modes.
+Its CPU work during Laya mode is included in whole-system utilization and competes
+with native CPU work. The runtime never waits for the model on a request thread.
+The default gate is 0.70 maximum class probability, without domain calibration.
+
+### Inference budget experiment
+
+The first full comparison used two CPU inference threads and an 800 ms timeout.
+All 11 control calls timed out and fell back; no model decision was applied.
+That run completed 6,037 requests, rejected 2,003, and had 4,607.29 ms p99, versus
+6,919 completed / 1,121 rejected / 4,233.29 ms p99 for the 2-second heuristic.
+Static GPU batching completed all 8,040 at 48.94 ms p99. The two-thread model run
+is a real timeout/fallback measurement, not evidence of useful model scheduling.
+
+To test whether CPU allocation caused those timeouts, the same 237-token request
+was measured without runtime load: two warmups and five timed calls per thread
+count, one loaded checkpoint, one inter-op thread. The policy and probability
+were unchanged (`gpu_batch`, 0.697) across these configurations.
+
+| Inference threads | Mean ms | Minimum ms | Maximum ms |
+| ---: | ---: | ---: | ---: |
+| 2 | 951.92 | 908.82 | 1,033.19 |
+| 4 | 526.97 | 522.96 | 533.71 |
+| 8 | 654.15 | 592.36 | 714.95 |
+
+Four intra-op threads were selected based on this measurement; the timeout,
+confidence gate, trace, and control interval were retained. No prompt or benchmark
+was tuned to force a model win. The initial two-thread run remains in
+`benchmark-output/phase4-laya/`; the final comparison is recorded separately.
+
+### Four-thread comparison
+
+| Policy | Completed / rejected | QPS | p50 ms | p95 ms | p99 ms | SLO violations | Changes |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| cpu_latency | 3415 / 4625 | 170.74 | 3313.99 | 3933.07 | 3942.43 | 7967 | 0 |
+| gpu_immediate | 8040 / 0 | 401.98 | 446.28 | 788.43 | 820.66 | 7332 | 0 |
+| gpu_batch | 8040 / 0 | 401.99 | 25.40 | 47.90 | 55.45 | 7208 | 0 |
+| heuristic | 6918 / 1122 | 345.89 | 74.39 | 3795.52 | 4178.30 | 7205 | 3 |
+| laya | 6261 / 1779 | 313.04 | 131.96 | 4618.55 | 4726.93 | 7218 | 3 |
+
+All modes had zero search failures and zero native controller exceptions. Only
+static GPU modes accepted the full trace; their result checksums matched.
+Laya made 11 bounded calls: nine returned a valid but below-threshold probability
+and two timed out. All 11 applied the heuristic fallback. Mean call latency was
+622.46 ms, maximum 802.00 ms (the configured timeout plus scheduling overhead).
+Call counts include the final in-flight control call joined during shutdown;
+throughput ends when accepted search work finishes, excluding that final join.
+
+| Policy | Mean whole-system CPU % | Mean GPU % |
+| --- | ---: | ---: |
+| cpu_latency | 6.73 | 1.10 |
+| gpu_immediate | 2.30 | 27.88 |
+| gpu_batch | 2.33 | 29.45 |
+| heuristic | 5.62 | 20.62 |
+| laya | 13.75 | 20.00 |
+
+Utilization is an arithmetic mean of 500 ms telemetry rows excluding the final
+drained row and absent readings. Adaptive samples repeat between 2-second ticks;
+these means are descriptive, not process CPU accounting or exact time integrals.
+Laya's measured CPU cost and delayed fallback make it less useful than the native
+heuristic here. Static GPU batching is strongest on this GPU-friendly trace.
+Phase 3's faster 500 ms heuristic also performs better than the 2-second baseline;
+slower control allows CPU backlog to form before routing changes.
+
+The compact measured comparison is committed in `benchmarks/results/phase4.json`.
+Raw summaries, trace/hash, commands, compiler metadata, Python package versions,
+model revision, server log, and telemetry are in ignored
+`benchmark-output/phase4-laya-4/`. The server used roughly 2 GiB RSS after warmup.
+
+### Ungated diagnostic
+
+A separate run set `--laya-min-confidence 0` to observe raw choices. This is not the
+shipped confidence gate. All ten responses were accepted (mean 552.65 ms,
+maximum 638.08 ms); Laya selected `gpu_batch` on every call, including sparse
+traffic. Only the seven startup requests ran on CPU. All 8,040 queries completed,
+with 401.98 QPS, p50 25.71 ms, p95 44.33 ms, p99 51.49 ms, 7,201 SLO violations,
+and no rejections or errors. The checksum matched the static GPU runs.
+
+This validates real model decisions reaching the C++ scheduler. It behaves like
+static GPU batching on this trace; the small p99 difference between separate
+runs is not evidence of a model speedup or useful adaptation. The default gated
+mode remains experimental. Better domain calibration/training would be separate
+work, outside this project's scope. Diagnostic artifacts are in
+`benchmark-output/phase4-laya-diagnostic/`.
+
+### Failure handling and review
+
+The real server rejects oversized token inputs with HTTP 422. With the server
+stopped, the 1,000-vector trace completes all 8,040 requests through heuristic
+fallback (11 connection failures, no search failures). C++ tests also cover HTTP
+errors, redirects, oversized/deep/malformed responses, unknown policies,
+inconsistent probabilities, low confidence, unavailable GPU, memory guards,
+control rate limiting, and search completion while the control call is blocked.
+The independent Phase 4 review found no actionable regressions; its read-only
+sandbox could not run HTTP/live tests, which were run separately on the Razer.
+
+All ten Razer CUDA Release tests pass. Linux CPU ASan, UBSan, and TSan suites pass
+(including AVX2 and Laya/HTTP tests; GPU tests explicitly skip in sanitizer builds).
+TSan uses per-process `setarch x86_64 -R`. Mac Release and UBSan suites pass on
+available backends. The default build with Laya disabled also builds and passes.
+Prior Mac ASan startup and WDDM Compute Sanitizer limitations remain as documented.

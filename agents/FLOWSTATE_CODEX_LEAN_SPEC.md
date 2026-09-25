@@ -1,5 +1,12 @@
 # Flowstate — Codex Build Specification
 
+> User-approved amendment (2026-09-25): replace hosted Jev with local Laya for
+> Phase 4 and the demo. Use the existing upstream inference/server package, one
+> pinned checkpoint, and CPU inference with limited threads. No custom inference
+> engine, serving framework, or training pipeline. Preserve all original phase
+> gates, safeguards, and honest evaluation requirements. Local inference requires
+> no TypeSafe credentials; confidence is an uncalibrated model score for this task.
+
 ## 0. Goal
 
 Build **Flowstate**, a self-optimizing heterogeneous C++/CUDA runtime for vector similarity search.
@@ -13,9 +20,9 @@ Flowstate should dynamically route vector-search workloads across:
 
 The runtime should observe live system state and adapt execution policy.
 
-A Jev-based controller will later act as a **slow control-plane policy selector**.
+A Laya-based controller will later act as a **slow control-plane policy selector**.
 
-Jev must **not** run in the per-request hot path.
+Laya must **not** run in the per-request hot path.
 
 The core of the project must remain:
 
@@ -102,7 +109,7 @@ Incoming query
 +-----------------------------+
                  |
                  v
-              Jev
+              Laya
        high-level policy only
 ```
 
@@ -164,9 +171,9 @@ Recommended interval:
 
 It observes summarized telemetry and selects a high-level execution policy.
 
-Jev must never be called for each request.
+Laya must never be called for each request.
 
-Jev must never directly execute work.
+Laya must never directly execute work.
 
 The C++ runtime is always responsible for actual scheduling.
 
@@ -246,7 +253,7 @@ Correctness comes before optimization.
 - bounded request queues
 - runtime telemetry
 - heuristic policy selection
-- Jev policy selection
+- Laya policy selection
 - load generation
 - benchmark tooling
 - simple realtime browser dashboard
@@ -326,7 +333,7 @@ Flowstate/
 │   │
 │   ├── policy/
 │   │   ├── heuristic.cpp
-│   │   └── jev.cpp
+│   │   └── laya.cpp
 │   │
 │   └── server/
 │       └── telemetry_server.cpp
@@ -430,7 +437,7 @@ Phase 2 — Runtime
 - [x] Phase 1 — Compute backends
 - [ ] Phase 2 — Runtime
 - [ ] Phase 3 — Adaptive scheduling
-- [ ] Phase 4 — Jev integration
+- [ ] Phase 4 — Laya integration
 - [ ] Phase 5 — Dashboard and polish
 
 ## Current Notes
@@ -489,7 +496,7 @@ chore: initialize flowstate project
 feat: add vector search backends
 feat: add concurrent runtime and gpu batching
 feat: add adaptive scheduling and telemetry
-feat: add jev policy controller
+feat: add laya policy controller
 feat: add realtime flowstate dashboard
 bench: add scheduler evaluation
 ```
@@ -889,17 +896,17 @@ Commit and push.
 
 ---
 
-# 16. Phase 4 — Jev Integration
+# 16. Phase 4 — Laya Integration
 
-Only add Jev after the heuristic system works end to end.
+Only add Laya after the heuristic system works end to end.
 
 Create:
 
 ```cpp
-class JevPolicyController;
+class LayaPolicyController;
 ```
 
-Jev receives summarized runtime state.
+Laya receives summarized runtime state.
 
 Example:
 
@@ -916,7 +923,7 @@ Example:
 }
 ```
 
-Jev may choose only:
+Laya may choose only:
 
 ```text
 cpu_latency
@@ -934,7 +941,7 @@ RuntimeStats
 serialize bounded state
      |
      v
-Jev
+Laya
      |
      v
 typed policy choice
@@ -968,7 +975,7 @@ if (!decision.valid ||
 
 Record:
 
-- Jev latency
+- Laya latency
 - selected policy
 - confidence
 - fallback count
@@ -980,7 +987,7 @@ Never commit secrets.
 
 ---
 
-# 17. Jev Evaluation
+# 17. Laya Evaluation
 
 Compare at least:
 
@@ -988,7 +995,7 @@ Compare at least:
 Static AVX2
 Static CUDA
 Heuristic
-Jev
+Laya
 ```
 
 Use the same workload trace and seed.
@@ -1003,18 +1010,18 @@ Measure:
 - CPU utilization
 - GPU utilization
 - policy changes
-- Jev fallbacks
-- Jev control-plane latency
+- Laya fallbacks
+- Laya control-plane latency
 
-Do not tune the benchmark to force Jev to win.
+Do not tune the benchmark to force Laya to win.
 
-If heuristic beats Jev, document that honestly.
+If heuristic beats Laya, document that honestly.
 
 The interesting question is:
 
 > When does semantic/adaptive policy control help, and when is it unnecessary?
 
-Run a deeper review after Jev integration.
+Run a deeper review after Laya integration.
 
 Prioritize:
 
@@ -1064,8 +1071,8 @@ queue depth
 current policy
 selected backend distribution
 p95 / p99 latency
-Jev confidence
-Jev fallback state
+Laya confidence
+Laya fallback state
 ```
 
 Visualize routing clearly.
@@ -1183,7 +1190,7 @@ Show a simple comparison:
 Static CPU
 Static GPU
 Heuristic
-Jev
+Laya
 ```
 
 with:
@@ -1269,9 +1276,9 @@ Concurrency tests:
 Failure tests:
 
 - CUDA unavailable
-- Jev timeout
-- Jev invalid response
-- Jev low confidence
+- Laya timeout
+- Laya invalid response
+- Laya low confidence
 - queue full
 - missing telemetry fields
 - shutdown with pending work
@@ -1317,7 +1324,7 @@ Use deeper reviews at these boundaries:
 
 ```text
 after Phase 2 — runtime/concurrency/CUDA
-after Phase 4 — Jev integration
+after Phase 4 — Laya integration
 after Phase 5 — final project
 ```
 
@@ -1392,7 +1399,7 @@ It should explain:
 - GPU batching
 - telemetry
 - scheduler
-- Jev control plane
+- Laya control plane
 - failure handling
 
 Update only when architecture meaningfully changes.
@@ -1414,7 +1421,7 @@ Include:
 - workloads
 - scalar vs AVX2 vs CUDA
 - batching results
-- static vs heuristic vs Jev scheduling
+- static vs heuristic vs Laya scheduling
 - limitations
 - unexpected results
 
@@ -1463,7 +1470,7 @@ Flowstate is complete when all of these work:
 - telemetry
 - workload generator
 - heuristic scheduling
-- Jev policy controller
+- Laya policy controller
 - safe fallback behavior
 - reproducible evaluation
 - realtime browser dashboard
@@ -1506,7 +1513,7 @@ Only after the core project is finished:
 
 - learned latency predictor
 - policy replay viewer
-- compare Jev to a small local model
+- compare additional local policy models
 - confidence-aware exploration
 
 ---

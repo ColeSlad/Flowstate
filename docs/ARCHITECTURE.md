@@ -119,6 +119,36 @@ benchmark percentiles. Producer lateness is measured against each burst's intend
 arrival time; offered-latency/SLO reporting includes it. Queries have a fixed
 vector dimension per dataset, while traces can change top-K. No synthetic GPU
 contention or fabricated utilization is used.
-Phase 4 will run Jev periodically over bounded summaries, with timeouts and
-heuristic fallback; no Jev call will execute or block individual queries.
-Phase 5 will expose telemetry to a dashboard independently of runtime correctness.
+## Local Laya controller
+
+`PolicyController` owns the shared periodic loop; `HeuristicController` is its
+native-selector alias. `LayaPolicyController` supplies a local-model selector.
+One control thread samples every 2,000 ms by default, makes one bounded call,
+then atomically updates the runtime policy. Existing requests retain their route.
+Sampling timestamps precede inference so snapshot age includes its latency.
+During a call the previous policy remains active; failures select the heuristic
+from the sampled state. Network/inference work never holds the runtime queue mutex.
+
+The libcurl transport permits only numeric loopback HTTP ports, bypasses proxies,
+disables redirects, and times out after 800 ms by default. Bodies are bounded to
+16 KiB outgoing and 32 KiB incoming, with a JSON nesting limit. Policy parsing
+requires four valid probabilities summing to one (rounding tolerance), a known
+choice attaining the maximum, and matching `answer_confidence`. Only the English
+checkpoint is accepted. Low-confidence decisions fall back without a service
+error; timeout/HTTP/parse failures count as errors and fallbacks. No GPU means no
+model call, and measured low GPU memory prevents a GPU decision.
+
+`tools/run_laya.py` configures upstream Laya's FastAPI application and uvicorn,
+with one pinned checkpoint, CPU inference, four intra-op threads, one inter-op
+thread, and bounded HTTP concurrency. A token-budget hook rejects truncated state
+or policy descriptions. Telemetry numbers are rounded to keep state small.
+The server is a separate process bound to loopback; there is no custom inference
+engine or serving framework. The launcher supports explicit warmup before timing.
+Weights and Python dependencies live in ignored project directories.
+
+The confidence gate uses maximum class probability, not Laya's separate entropy
+score. It is not a calibrated scheduling accuracy estimate. Native heuristic
+fallback and all scheduling limits remain authoritative. Snapshots record call,
+fallback, and error counts, latest confidence/status, total/maximum call latency,
+and applied policy transitions. Raw responses are never logged by the runtime.
+Phase 5 will expose telemetry independently of runtime correctness.

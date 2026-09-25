@@ -1,0 +1,8 @@
+# Install CPU-only torch separately; these are the validated inference versions.
+laya[serve]==0.3.20
+transformers==5.17.0
+huggingface_hub==1.33.0
+safetensors==0.8.0
+numpy==2.5.3
+fastapi==0.141.1
+uvicorn==0.54.0

@@ -24,7 +24,12 @@ def main():
     parser.add_argument('--queue-capacity', type=int, default=1024)
     parser.add_argument('--cuda', choices=['auto', 'on', 'off'], default='auto')
     parser.add_argument('--cpu-backend', choices=['auto', 'scalar', 'avx2'], default='auto')
-    parser.add_argument('--modes', nargs='+', choices=['cpu_latency', 'gpu_immediate', 'gpu_batch', 'balanced', 'heuristic'],
+    parser.add_argument('--slo-ms', type=int, default=15)
+    parser.add_argument('--interval-ms', type=int)
+    parser.add_argument('--laya-port', type=int, default=8000)
+    parser.add_argument('--laya-timeout-ms', type=int, default=800)
+    parser.add_argument('--laya-min-confidence', type=float, default=.7)
+    parser.add_argument('--modes', nargs='+', choices=['cpu_latency', 'gpu_immediate', 'gpu_batch', 'balanced', 'heuristic', 'laya'],
                         default=['cpu_latency', 'gpu_immediate', 'gpu_batch', 'heuristic'])
     parser.add_argument('--label', default='local')
     args = parser.parse_args()
@@ -49,7 +54,13 @@ def main():
             command = [str(binary), '--trace', str(args.trace), '--mode', mode, '--vectors', str(args.vectors),
                        '--dimension', str(args.dimension), '--seed', str(args.seed), '--workers', str(args.workers),
                        '--queue-capacity', str(args.queue_capacity), '--cuda', args.cuda, '--cpu-backend', args.cpu_backend,
+                       '--slo-ms', str(args.slo_ms),
                        '--telemetry', str(args.output / f'{mode}.csv')]
+            if args.interval_ms is not None:
+                command += ['--interval-ms', str(args.interval_ms)]
+            if mode == 'laya':
+                command += ['--laya-port', str(args.laya_port), '--laya-timeout-ms', str(args.laya_timeout_ms),
+                            '--laya-min-confidence', str(args.laya_min_confidence)]
             metadata['commands'].append(command)
             (args.output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
             print(f'Running {mode}', flush=True)

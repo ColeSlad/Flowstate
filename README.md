@@ -1,9 +1,9 @@
 # Flowstate
 
-Flowstate is a C++20 exact dot-product vector search project, being built toward
-an adaptive CPU/CUDA runtime. It implements deterministic datasets, scalar and
+Flowstate is an adaptive C++20/CUDA runtime for exact dot-product vector search. It implements deterministic datasets, scalar and
 AVX2 search, CUDA search, a bounded concurrent runtime, GPU microbatching,
-rolling telemetry, heuristic scheduling, and reproducible benchmarks.
+rolling telemetry, heuristic scheduling, an optional local Laya controller, and
+reproducible benchmarks.
 
 **Phase 1 is complete.** Scalar, AVX2, and CUDA pass correctness tests on an
 i9-12900H / RTX 3080 Ti Laptop GPU under WSL 2. A measured crossover favors AVX2
@@ -12,13 +12,15 @@ complete:** concurrent submission, shutdown, and GPU batching are validated.
 **Phase 3 is complete:** live workload changes trigger CPU, GPU batch, balanced,
 and immediate-GPU policies. Static GPU batching has better tail latency than the
 heuristic on the recorded default trace; results include that limitation.
+**Phase 4 is complete:** pinned local Laya inference, bounded calls, confidence
+gating, fallback, and live comparison are validated.
 See [progress](PROGRESS.md), [results](docs/RESULTS.md), and the
 [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
 
 ```mermaid
 flowchart LR
     Submit[Async submission] --> Queue[Bounded CPU / GPU queues]
-    Control[Heuristic controller / 500 ms] --> Policy[Atomic policy]
+    Control[Heuristic / 500 ms or local Laya / 2000 ms] --> Policy[Atomic policy]
     Policy --> Submit
     Queue --> Telemetry[Rolling telemetry]
     Telemetry --> Control
@@ -209,15 +211,73 @@ readings and backend percentiles with no samples remain absent (empty CSV cells)
 macOS CPU utilization is currently unavailable. System utilization includes other
 processes and is distinct from runtime worker occupancy.
 
-## Remaining phases
+## Local Laya control plane
 
-The remaining phases add Jev and a lightweight browser dashboard. The native **data plane** owns all request
-execution. Jev will be a periodic
-**control plane** policy selector, outside the request hot path, with heuristic
-fallback. Jev and the dashboard are not implemented yet.
+The optional `LayaPolicyController` calls a local CPU inference process once every
+2 seconds. [Laya](https://github.com/NandhaKishorM/laya) replaces the originally
+planned hosted Jev controller by user request. Its existing FastAPI/uvicorn server
+handles inference; Flowstate remains a C++/CUDA vector-search runtime. Only
+aggregate telemetry and four policy descriptions cross the loopback connection.
 
-Current technical concerns are floating-point reduction differences, safe SIMD
-dispatch, GPU resource lifetime, and measuring total result latency alongside
-kernel cost. [Architecture](docs/ARCHITECTURE.md) describes the current design.
+```sh
+# Ubuntu prerequisite: sudo apt-get install libcurl4-openssl-dev python3-venv
+cmake -S . -B build-laya -DCMAKE_BUILD_TYPE=Release -DFLOWSTATE_ENABLE_LAYA=ON
+cmake --build build-laya -j
+ctest --test-dir build-laya --output-on-failure
 
-Demo video/GIF: pending completion of the runtime and dashboard phases.
+python3 -m venv .venv-laya
+.venv-laya/bin/python -m pip install 'torch==2.14.0' --index-url https://download.pytorch.org/whl/cpu
+.venv-laya/bin/python -m pip install -r tools/laya-requirements.txt
+build-laya/flowstate_laya_tests --sample-request > /tmp/flowstate-laya-request.json
+.venv-laya/bin/python tools/run_laya.py --threads 4 --warmup-request /tmp/flowstate-laya-request.json
+```
+
+These inference setup commands target Linux/WSL; native C++ CPU builds also work
+on macOS. The launcher pins Laya 0.3.20's English checkpoint to revision
+`55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851`, binds only `127.0.0.1:8000`, and limits
+inference to four CPU threads plus one inter-op thread. The first launch downloads
+weights into ignored `.cache-laya/`; subsequent launches reuse them. No TypeSafe
+account or API key is needed. Keep this process running during the comparison.
+It uses upstream serving code; the small launcher only configures the checkpoint,
+resource limits, warmup, and a hook that rejects inputs exceeding token budgets.
+Model weights, virtual environments, and caches are never committed.
+
+Enable both `FLOWSTATE_ENABLE_LAYA=ON` and `FLOWSTATE_ENABLE_CUDA=ON` for CUDA runs.
+CMake fetches nlohmann/json 3.12.0 with a pinned SHA256 and requires libcurl 7.85+.
+The default CPU-only build has no Laya dependency.
+
+```sh
+python3 benchmarks/run_load.py --binary build-gpu/flowstate_load \
+  --cuda on --cpu-backend avx2 --interval-ms 2000 \
+  --modes cpu_latency gpu_immediate gpu_batch heuristic laya \
+  --output benchmark-output/laya-comparison
+```
+
+Calls have an 800 ms timeout, bounded request/response bodies, no redirects or
+proxy use, and no immediate retries. Timeouts, unavailable service, malformed
+answers, and low confidence select the heuristic. GPU unavailability skips model
+calls. The last applied policy stays active while waiting; search submissions and
+execution never wait for inference. Shutdown joins the control thread.
+
+Laya's `answer_confidence` (maximum class probability) is checked against its
+returned distribution and an initial 0.70 gate. Its entropy-based `confidence`
+field is deliberately ignored. Neither score is calibrated for Flowstate: upstream
+reports overconfidence and weak zero-shot results on its typed-decision tasks.
+This is an experimental policy selector, with no claim of superiority over native
+scheduling. No training pipeline is included. [Upstream limitations](https://github.com/NandhaKishorM/laya#honest-limits).
+
+CSV output records decisions, confidence, fallbacks, errors, and control latency.
+`--laya-port`, `--laya-timeout-ms`, `--laya-min-confidence`, `--interval-ms`, and
+`--slo-ms` are configurable. Evaluation includes local inference's CPU cost;
+fixture tests are not model performance measurements. On the measured trace, all
+default-gated calls fell back; ungated Laya chose GPU batching throughout and
+performed similarly to static batching. The heuristic is the practical default.
+See the full [results](docs/RESULTS.md).
+
+## Remaining work
+
+Phase 4 validation and review are complete. The lightweight realtime browser
+dashboard is next. [Architecture](docs/ARCHITECTURE.md) explains the
+control/data-plane boundary and runtime ownership.
+
+Demo video/GIF: pending the dashboard phase.
