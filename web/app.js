@@ -3,10 +3,10 @@ const $ = id => document.getElementById(id);
 const number = (value, digits = 0) => value == null ? '—' : Number(value).toLocaleString(undefined, {maximumFractionDigits: digits});
 const percent = value => value == null ? 'Unavailable' : `${number(value * 100, 0)}%`;
 const policies = {
-  cpu_latency: ['CPU latency', 'New searches run on the CPU, with no intentional batch delay.'],
-  gpu_immediate: ['GPU immediate', 'New searches run on the GPU as soon as it is available.'],
-  gpu_batch: ['GPU batching', 'New searches collect into GPU batches as traffic allows.'],
-  balanced: ['Balanced', 'New requests split evenly between the CPU and immediate GPU execution.']
+  cpu_latency: ['CPU latency', 'CPU execution without a batching delay.'],
+  gpu_immediate: ['GPU immediate', 'GPU execution without a batching delay.'],
+  gpu_batch: ['GPU batching', 'Requests collect into batches for GPU execution.'],
+  balanced: ['Balanced', 'New requests split evenly between CPU and GPU.']
 };
 let latest, lastEvent = 0, lastPolicy, pending = false, changedAt = 0;
 let history = [], transitions = [];
@@ -14,7 +14,7 @@ let controls = {traffic: 'low', top_k: 10, contention: false};
 function connection(state) {
   if (document.body.dataset.connection === state) return;
   document.body.dataset.connection = state;
-  $('connection-label').textContent = state === 'live' ? 'Runtime connected' : 'Telemetry paused · reconnecting';
+  $('connection-label').textContent = state === 'live' ? 'Connected' : 'Reconnecting';
   $('controls').disabled = state !== 'live' || pending;
 }
 function renderControls() {
@@ -27,7 +27,7 @@ function renderControls() {
   $('top-k').value = controls.top_k;
   $('contention').checked = controls.contention;
   $('contention').disabled = !latest?.gpu_available || Boolean(latest?.contention.error);
-  $('contention-label').textContent = latest?.contention.error ? 'Competing workload stopped' : controls.contention ? 'Competing workload on' : 'Competing workload off';
+  $('contention-label').textContent = latest?.contention.error ? 'Stopped' : !latest?.gpu_available ? 'Unavailable' : controls.contention ? 'On' : 'Off';
   $('contention-note').textContent = latest?.gpu_available ? 'Runs a real competing CUDA kernel' : 'Requires an available CUDA GPU';
   for (const option of $('top-k').options) option.disabled = latest && Number(option.value) > latest.vectors;
 }
@@ -51,11 +51,11 @@ $('top-k').addEventListener('change', event => updateControls({top_k: Number(eve
 $('contention').addEventListener('change', event => updateControls({contention: event.target.checked}));
 
 function chart() {
-  const width = Math.max(260, $('latency-chart').clientWidth), height = $('latency-chart').clientHeight;
+  const width = Math.max(200, $('latency-chart').clientWidth), height = $('latency-chart').clientHeight;
   const left = 47, right = width - 12, top = 12, bottom = height - 28;
   $('latency-chart').setAttribute('viewBox', `0 0 ${width} ${height}`);
   $('chart-empty').setAttribute('x', width / 2); $('chart-empty').setAttribute('y', height / 2);
-  const end = latest?.uptime_ms || 0, start = Math.max(0, end - 60000);
+  const end = latest?.uptime_ms || 0, start = end - 60000;
   const samples = history.filter(value => value.time >= start);
   const values = samples.flatMap(value => [value.p95, value.p99]).filter(value => value != null);
   const max = Math.max(20, ...values) * 1.12;
@@ -72,7 +72,7 @@ function chart() {
   }
   for (let i = 0; i <= 4; i++) {
     const label = document.createElementNS(ns, 'text'); label.setAttribute('x', left + (right - left) * i / 4); label.setAttribute('y', height - 6); label.setAttribute('text-anchor', i === 0 ? 'start' : i === 4 ? 'end' : 'middle');
-    label.textContent = `${number((start + i * 15000) / 1000)}s`; $('chart-grid').append(label);
+    label.textContent = i === 4 ? 'Now' : `−${(4 - i) * 15}s`; $('chart-grid').append(label);
   }
   const path = key => {
     let drawing = false, previousTime = 0;
@@ -89,6 +89,7 @@ function chart() {
   $('chart-empty').setAttribute('visibility', values.length ? 'hidden' : 'visible');
   $('chart-description').textContent = `Live latency over the last 60 seconds. Current p95 ${number(latest?.p95_ms, 1)} ms; p99 ${number(latest?.p99_ms, 1)} ms.`;
 }
+new ResizeObserver(chart).observe($('latency-chart'));
 function render(state) {
   if (latest && state.uptime_ms < latest.uptime_ms) { history = []; transitions = []; lastPolicy = undefined; }
   latest = state; lastEvent = Date.now(); connection('live');
@@ -109,7 +110,7 @@ function render(state) {
   $('cpu-kind').textContent = state.cpu_backend.toUpperCase(); $('gpu-kind').textContent = state.gpu_available ? 'CUDA' : 'UNAVAILABLE';
   $('batch-size').textContent = number(state.mean_batch_size, 1);
   $('gpu-memory').textContent = state.gpu_memory_free_bytes == null ? 'Unavailable' : `${number(state.gpu_memory_free_bytes / 1073741824, 1)} GiB`;
-  $('controller-kind').textContent = state.controller === 'laya' ? 'LOCAL LAYA · 2,000 MS CONTROL' : 'NATIVE HEURISTIC · 500 MS CONTROL';
+  $('controller-kind').textContent = state.controller === 'laya' ? 'Local Laya · every 2 seconds' : 'Heuristic · every 500 ms';
   const [name, description] = policies[state.policy] || ['Unknown', 'Waiting for a policy decision.'];
   $('policy-name').textContent = name; $('policy-description').textContent = description;
   if (state.policy !== lastPolicy) {

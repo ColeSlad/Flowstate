@@ -12,7 +12,10 @@ Laya adds inference overhead and remains experimental. See
 [results](docs/RESULTS.md), [architecture](docs/ARCHITECTURE.md),
 [progress](PROGRESS.md), and the [source specification](agents/FLOWSTATE_CODEX_LEAN_SPEC.md).
 
-![Live dashboard with real CUDA contention and balanced routing](docs/dashboard.png)
+![Simplified Flowstate dashboard showing live CPU-only telemetry](docs/dashboard.png)
+
+CPU-only preview on macOS. GPU controls become available when CUDA is enabled
+and available.
 
 ```mermaid
 flowchart LR
@@ -325,8 +328,9 @@ Incoming requests shows the measured rate. Results per query changes real top-K
 selection work without rebuilding the dataset. CPU/GPU bars show successful
 completions in the last second, while utilization covers the whole machine.
 Latency includes queue wait and uses the runtime's bounded histograms. Overload
-rejections and SLO misses remain visible. The comparison is explicitly labeled
-recorded data and never changes with the live controls.
+rejections and SLO misses remain visible. Runtime details expands policy history,
+backend counts, batch size, memory, and measurement notes. The comparison is explicitly labeled recorded data and never
+changes with the live controls.
 
 Actual transition times and utilization depend on hardware and background work;
 the dashboard does not synthesize measurements to match a script. The Razer demo
@@ -334,8 +338,8 @@ observed CPU → GPU batching → balanced → GPU batching → CPU, including a
 batching transition while draining after contention. Browser disconnects do not
 stop the runtime. Controls disable while disconnected and reconnect automatically.
 
-Demo video/GIF: **placeholder** — the screenshot above is from the validated live
-GPU demo; follow the sequence above to record it.
+Demo video/GIF: **placeholder** — follow the sequence above on a CUDA host to
+record it. The screenshot above shows the refreshed UI with real CPU-only telemetry.
 
 ### Browser regression checks
 

@@ -178,7 +178,10 @@ The browser keeps at most 125 chart samples and six observed policy transitions.
 It disables controls on disconnect, uses native EventSource reconnection, and
 recreates terminally closed streams with capped retry backoff. Page-hide closes
 the stream and page-show restores it. The chart breaks across missing telemetry;
-recorded benchmark data remains visibly separate from the live snapshot.
+recorded benchmark data remains visibly separate from the live snapshot. Routing,
+policy, and latency share one primary panel; native disclosure controls reveal
+secondary runtime details and the benchmark table. Chart labels show relative time,
+and the SVG resizes independently of incoming telemetry.
 
 The demo-only contention object owns a separate nonblocking CUDA stream, a small
 device buffer, and a joinable thread. While enabled it repeatedly launches a

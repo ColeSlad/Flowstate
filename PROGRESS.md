@@ -11,6 +11,7 @@ Complete — all five phases implemented, measured, and reviewed.
 - [x] Phase 5 — Dashboard and polish
 
 ## Current Notes
+- UI refresh (2026-09-27): simplified the dashboard into one primary panel, shortened labels, and moved secondary measurements/history into Runtime details. README screenshot uses real local CPU telemetry; the Razer was unreachable for a fresh GPU capture. Build, dashboard HTTP test, browser regressions, and desktop/phone/keyboard appearance checks pass.
 - Canonical origin is `git@github.com:ColeSlad/Flowstate.git`. The source spec records the user-approved Jev → local Laya amendment.
 - Scalar/AVX2/CUDA equivalence, bounded concurrency, microbatching, telemetry, and routing are validated on the Razer i9-12900H / RTX 3080 Ti Laptop under WSL2.
 - All 12 CUDA Release tests pass without skips. Linux CPU ASan/UBSan/TSan pass with dashboard and Laya enabled; Mac CPU Release passes with Laya on/off. Prior Mac ASan and WDDM Compute Sanitizer limits remain documented.

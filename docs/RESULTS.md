@@ -467,8 +467,10 @@ rolling p99 upper bound of 3,152 ms. These costs remain visible in the UI. It do
 not claim a 15 ms SLO under overload or reproduce the illustrative CPU percentages
 in the spec. After the scripted sequence, quiet traffic continued; shutdown later
 reported all 19,545 accepted requests completed with zero failures. Raw snapshots
-are in ignored `benchmark-output/dashboard/demo.json`; the committed
-[dashboard screenshot](dashboard.png) captures the contention stage.
+are in ignored `benchmark-output/dashboard/demo.json`; the
+[original GPU screenshot](https://github.com/ColeSlad/Flowstate/blob/4e62699/docs/dashboard.png)
+captures the contention stage. The current README image shows a later UI refresh
+with CPU-only telemetry.
 
 A separate real-model browser smoke check confirmed that the Laya panel displays
 actual maximum class probability, inference latency, and heuristic fallback.
