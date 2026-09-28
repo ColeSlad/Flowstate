@@ -124,6 +124,29 @@ for one query (0.028 ms vs CUDA 0.123 ms), while CUDA wins at batch size 8
 (0.166 ms vs AVX2 0.241 ms). At 100,000 × 384, CUDA batch 32 reaches about
 **1,206 queries/sec**; AVX2 reaches about **133 queries/sec**.
 
+## Repeated benchmark report
+
+For repeated rate sweeps, capacity criteria, and exportable charts, use the
+[benchmark report workflow](docs/BENCHMARKING.md). It records five shuffled
+trials per case across 1K/100K/1M vectors, steady traffic, bursts, and real CUDA
+contention. Its capacity metric is the **highest tested offered rate that passes
+every trial's latency, rejection, and sample-count criteria**. This is separate
+from peak burst throughput. New GPU measurements are pending access to the Razer;
+the earlier results above remain the recorded GPU baseline.
+
+```sh
+python3 -m venv .venv-bench
+.venv-bench/bin/python -m pip install -r benchmarks/requirements.txt
+.venv-bench/bin/python benchmarks/run_report.py --binary build-gpu/flowstate_load \
+  --cuda on --cpu-backend avx2 --label 'describe CPU / GPU / OS here' \
+  --output benchmark-output/report
+```
+
+The complete default sweep schedules about 160 minutes of traffic, plus setup
+and queue drain. Open `benchmark-output/report/report.md` afterward. Use the same
+command with `--resume` after an interruption. Python 3.11+ is required by this
+report tool; the earlier runners remain standard-library-only.
+
 ## Concurrent runtime
 
 ```cpp
@@ -191,7 +214,8 @@ python3 benchmarks/run_load.py --cuda off --modes cpu_latency heuristic \
 ```
 
 Trace CSV specifies phase name, duration, average offered requests/sec, burst
-size, and top-K. Dimension and dataset size are configurable per run; top-K
+size, and top-K. An optional final `gpu_contention` column accepts `0`/`1` and
+requires CUDA when enabled. Dimension and dataset size are configurable per run; top-K
 varies real selection work within a trace. Queries and arrival schedules use the
 same seed/trace across policies. The default 20-second trace moves from 10 QPS to
 1,200 QPS in bursts of 32, then 150 QPS with K=50, and returns to 10 QPS.

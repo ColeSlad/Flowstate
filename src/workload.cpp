@@ -11,7 +11,9 @@ std::vector<LoadPhase> read_trace(const std::string& path, std::size_t vectors) 
     std::string line;
     if(!std::getline(input,line)) throw std::invalid_argument("Empty workload trace");
     if(!line.empty() && line.back()=='\r') line.pop_back();
-    if(line!="name,duration_ms,requests_per_second,burst,top_k") throw std::invalid_argument("Unexpected workload CSV header");
+    const bool contention_column=line=="name,duration_ms,requests_per_second,burst,top_k,gpu_contention";
+    if(!contention_column && line!="name,duration_ms,requests_per_second,burst,top_k")
+        throw std::invalid_argument("Unexpected workload CSV header");
     std::vector<LoadPhase> result;
     std::uint64_t duration=0;
     while(std::getline(input,line)) {
@@ -20,7 +22,7 @@ std::vector<LoadPhase> read_trace(const std::string& path, std::size_t vectors) 
         std::vector<std::string> fields;
         std::string field;
         while(std::getline(row,field,',')) fields.push_back(field);
-        if(fields.size()!=5 || line.back()==',' || fields[0].empty() || fields[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")!=std::string::npos)
+        if(fields.size()!=(contention_column?6U:5U) || line.back()==',' || fields[0].empty() || fields[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")!=std::string::npos)
             throw std::invalid_argument("Invalid workload CSV row");
         auto number=[&](std::size_t i) {
             std::uint64_t value=0;
@@ -29,6 +31,11 @@ std::vector<LoadPhase> read_trace(const std::string& path, std::size_t vectors) 
             return value;
         };
         LoadPhase phase{fields[0],number(1),number(2),static_cast<std::size_t>(number(3)),static_cast<std::size_t>(number(4))};
+        if(contention_column) {
+            const auto enabled=number(5);
+            if(enabled>1) throw std::invalid_argument("GPU contention must be 0 or 1");
+            phase.gpu_contention=enabled==1;
+        }
         if(!phase.duration_ms || phase.duration_ms>600000 || phase.requests_per_second>1000000 ||
            !phase.burst || phase.burst>100000 || !phase.top_k || phase.top_k>vectors || result.size()>=100)
             throw std::invalid_argument("Workload phase exceeds bounds");

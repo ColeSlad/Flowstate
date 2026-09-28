@@ -9,7 +9,7 @@ struct ContentionState {
     std::uint64_t kernels = 0;
     std::string error;
 };
-// Demo-only competing work. It owns its stream/buffer/thread and never changes search results.
+// Competing work for demos/benchmarks. Owns its stream/buffer/thread; never changes search results.
 class GpuContention {
 public:
     virtual ~GpuContention() = default;

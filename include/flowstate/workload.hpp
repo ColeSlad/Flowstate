@@ -10,6 +10,7 @@ struct LoadPhase {
     std::uint64_t requests_per_second;
     std::size_t burst;
     std::size_t top_k;
+    bool gpu_contention = false;
 };
 std::vector<LoadPhase> read_trace(const std::string& path, std::size_t vectors);
 } // namespace flowstate

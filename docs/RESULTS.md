@@ -1,5 +1,32 @@
 # Results
 
+## Repeated-report tooling — 2026-09-28
+
+The new [benchmark report workflow](BENCHMARKING.md) adds five shuffled trials
+per case, a 1K/100K/1M rate grid, exact offered-latency/SLO accounting, and a
+dynamic trace using the existing real CUDA competitor. It reports the highest
+tested steady rate meeting explicit p99, rejection, sample-count, and drain-time
+criteria in every trial. PNG/SVG charts cover capacity, latency versus load,
+and a predetermined burst/recovery trial. Individual measurements and full
+min–max variation are retained; no confidence intervals are inferred.
+
+Local validation on the M3 Max completed all **27 short CPU-only trials** across
+1K/100K/1M vectors (three repetitions; 5-second steady cases at 50/100 QPS;
+2-second quiet/burst/recovery phases). All accepted requests completed without
+search or controller failures, and fully completed equivalent workloads had
+matching ID checksums. Tables and all three figures render and were visually
+inspected. These short trials deliberately do not meet the 1,000-sample capacity
+guard; they establish tooling behavior, not new resume-ready capacity numbers.
+Artifacts are local under ignored `benchmark-output/report-smoke/`.
+The 10 passing Mac Release tests include report statistics, native trace/resume,
+artifact-integrity checks, and the existing HTTP/runtime tests. Three unavailable
+backend tests explicitly skip.
+
+The Razer SSH connection timed out on three attempts. **The new GPU build,
+real-contention benchmark test, and full repeated GPU sweep remain pending**;
+the GPU measurements below are the earlier phase results, not a rerun. The
+workflow and exact reproduction commands are ready for when that host is reachable.
+
 ## Status
 
 Phases 1–4 are complete: scalar, AVX2, and CUDA correctness checks pass,

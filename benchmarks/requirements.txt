@@ -1,0 +1,2 @@
+# Plotting only; the runner and statistics use Python's standard library.
+matplotlib>=3.9,<4

@@ -1,6 +1,7 @@
 #include "../src/cli.hpp"
 #include "flowstate/scheduler.hpp"
 #include "flowstate/workload.hpp"
+#include "../src/server/contention.hpp"
 #ifdef FLOWSTATE_ENABLE_LAYA
 #include "flowstate/laya.hpp"
 #endif
@@ -110,6 +111,8 @@ int main(int argc,char** argv) {
         if(scheduled>2000000) throw std::invalid_argument("Trace exceeds two million requests");
         config.enable_cuda=cuda=="on" || (cuda=="auto" && fs::cuda_available());
         if(!config.enable_cuda && static_policy!=fs::Policy::CpuLatency) throw std::invalid_argument("Selected policy requires CUDA");
+        const bool needs_contention=std::any_of(phases.begin(),phases.end(),[](const auto& phase) { return phase.gpu_contention; });
+        if(needs_contention && !config.enable_cuda) throw std::invalid_argument("Trace GPU contention requires CUDA");
         const auto dataset=fs::Dataset::generate(options.vectors,options.dimension,options.seed);
         options.top_k=std::min<std::size_t>(10,options.vectors);
         auto queries=fs::cli::queries(options);
@@ -119,6 +122,8 @@ int main(int argc,char** argv) {
         // Warm actual backend instances before moving them into an empty runtime.
         for(int i=0;i<3;++i) { cpu->search_batch(queries); if(gpu) gpu->search_batch(queries); }
         fs::Runtime runtime(dataset,config,std::move(cpu),std::move(gpu));
+        auto contention=needs_contention?fs::make_gpu_contention():nullptr;
+        if(needs_contention && !contention) throw std::runtime_error("GPU contention unavailable");
         runtime.set_policy(static_policy);
         std::unique_ptr<fs::HeuristicController> heuristic;
         fs::PolicyController* controller=nullptr;
@@ -141,7 +146,7 @@ int main(int argc,char** argv) {
         if(!telemetry_path.empty()) {
             telemetry.open(telemetry_path);
             if(!telemetry) throw std::invalid_argument("Cannot write telemetry CSV");
-            telemetry<<"elapsed_ms,phase,policy,arrival_rate,throughput,queue_depth,pending_gpu_jobs,cpu_utilization,gpu_utilization,gpu_memory_free_bytes,p50_ms,p95_ms,p99_ms,scalar_p95_ms,simd_p95_ms,cuda_p95_ms,gpu_batch_p95_ms,mean_gpu_batch_size,policy_changes,controller_errors,sample_age_ms,laya_calls,laya_fallbacks,laya_errors,laya_confidence,laya_latency_ms,laya_status\n";
+            telemetry<<"elapsed_ms,phase,policy,arrival_rate,throughput,queue_depth,pending_gpu_jobs,cpu_utilization,gpu_utilization,gpu_memory_free_bytes,p50_ms,p95_ms,p99_ms,scalar_p95_ms,simd_p95_ms,cuda_p95_ms,gpu_batch_p95_ms,mean_gpu_batch_size,policy_changes,controller_errors,sample_age_ms,laya_calls,laya_fallbacks,laya_errors,laya_confidence,laya_latency_ms,laya_status,offered,completed,rejected,failed,contention_enabled,contention_active,contention_kernels\n";
         }
         std::vector<Pending> pending;
         std::vector<double> latency,offered_latency;
@@ -166,6 +171,8 @@ int main(int argc,char** argv) {
         const auto start=Clock::now();
         auto next_sample=start;
         auto sample=[&](std::string_view phase) {
+            const auto competitor=contention?contention->snapshot():fs::ContentionState{};
+            if(!competitor.error.empty()) throw std::runtime_error("GPU contention failed: "+competitor.error);
             if(!telemetry) return;
             fs::ControllerSnapshot state;
             if(controller) state=controller->snapshot();
@@ -188,10 +195,12 @@ int main(int argc,char** argv) {
             if(state.last_laya) optional(telemetry,state.last_laya->latency_ms);
             telemetry<<',';
             if(state.last_laya) telemetry<<state.last_laya->status;
-            telemetry<<'\n';
+            telemetry<<','<<offered<<','<<latency.size()<<','<<rejected<<','<<failed<<','
+                <<competitor.enabled<<','<<competitor.active<<','<<competitor.kernels<<'\n';
         };
         auto phase_start=start;
         for(const auto& phase:phases) {
+            if(contention) contention->set_enabled(phase.gpu_contention);
             const auto end=phase_start+std::chrono::milliseconds(phase.duration_ms);
             const auto count=phase.requests_per_second*phase.duration_ms/1000;
             std::uint64_t emitted=0;
@@ -221,6 +230,12 @@ int main(int argc,char** argv) {
         runtime.shutdown(); // Complete every accepted request, including the final partial batch.
         collect();
         const auto finished=Clock::now();
+        if(contention) {
+            contention->set_enabled(false);
+            const auto deadline=Clock::now()+5s;
+            while(contention->snapshot().active && Clock::now()<deadline) std::this_thread::sleep_for(1ms);
+            if(contention->snapshot().active) throw std::runtime_error("GPU contention did not stop");
+        }
         if(controller) controller->stop();
         const auto seconds=std::chrono::duration<double>(finished-start).count();
         sample("drained");
@@ -228,9 +243,12 @@ int main(int argc,char** argv) {
         const auto changes=controller?controller->snapshot().changes:0;
         const auto errors=controller?controller->snapshot().errors:0;
         const auto final=runtime.snapshot();
+        const auto competitor=contention?contention->snapshot():fs::ContentionState{};
+        if(!competitor.error.empty() || (needs_contention && !competitor.kernels))
+            throw std::runtime_error("GPU contention failed or executed no kernels: "+competitor.error);
         if(!pending.empty() || offered!=scheduled || latency.size()+failed+rejected!=offered || final.submitted!=final.completed)
             throw std::runtime_error("Load accounting mismatch");
-        std::cout<<"mode,cpu_backend,vectors,dimension,seed,workers,batch_max,max_wait_us,queue_capacity,offered,completed,rejected,failed,elapsed_seconds,queries_per_second,p50_ms,p95_ms,p99_ms,offered_p99_ms,slo_ms,slo_violations,cpu_completed,gpu_completed,policy_changes,controller_errors,max_producer_lag_ms,checksum,laya_calls,laya_fallbacks,laya_errors,mean_laya_latency_ms,max_laya_latency_ms\n"
+        std::cout<<"mode,cpu_backend,vectors,dimension,seed,workers,batch_max,max_wait_us,queue_capacity,offered,completed,rejected,failed,elapsed_seconds,queries_per_second,p50_ms,p95_ms,p99_ms,offered_p99_ms,slo_ms,slo_violations,cpu_completed,gpu_completed,policy_changes,controller_errors,max_producer_lag_ms,checksum,laya_calls,laya_fallbacks,laya_errors,mean_laya_latency_ms,max_laya_latency_ms,contention_kernels\n"
           <<std::fixed<<std::setprecision(6)<<mode<<','<<cpu_name<<','<<options.vectors<<','<<options.dimension<<','<<options.seed<<','
           <<config.cpu_workers<<','<<config.max_batch_size<<','<<config.max_wait.count()<<','<<config.queue_capacity<<','<<offered<<','
           <<latency.size()<<','<<rejected<<','<<failed<<','<<seconds<<','<<latency.size()/seconds<<',';
@@ -243,7 +261,7 @@ int main(int argc,char** argv) {
         if(control.laya_calls) std::cout<<control.total_laya_latency_ms/control.laya_calls;
         std::cout<<',';
         if(control.laya_calls) std::cout<<control.max_laya_latency_ms;
-        std::cout<<'\n';
+        std::cout<<','<<competitor.kernels<<'\n';
         return failed || errors ? 1 : 0;
     } catch(const std::exception& e) { std::cerr<<"flowstate_load: "<<e.what()<<'\n'; return 1; }
 }

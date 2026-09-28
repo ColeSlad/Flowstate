@@ -118,9 +118,17 @@ void trace_tests() {
     write("idle,1000,0,1,1\nburst,2000,500,32,10\n");
     const auto trace=fs::read_trace(file.path.string(),100);
     CHECK(trace.size()==2 && trace[0].requests_per_second==0 && trace[1].burst==32);
+    CHECK(!trace[0].gpu_contention && !trace[1].gpu_contention);
     for(const auto* row:{"bad,1000,2,1,101\n","bad,0,2,1,1\n","bad,1000,2,0,1\n",
                          "bad,1000,2,1,1,\n","bad,1000,-1,1,1\n","bad,1000,NaN,1,1\n",""}) {
         write(row); invalid([&] { fs::read_trace(file.path.string(),100); });
+    }
+    for(const auto* flag:{"0","1","2","-1",""}) {
+        { std::ofstream out(file.path); out<<"name,duration_ms,requests_per_second,burst,top_k,gpu_contention\n"
+                                          <<"load,1000,10,1,1,"<<flag<<'\n'; }
+        if(std::string_view(flag)=="0" || std::string_view(flag)=="1")
+            CHECK(fs::read_trace(file.path.string(),100)[0].gpu_contention==(std::string_view(flag)=="1"));
+        else invalid([&] { fs::read_trace(file.path.string(),100); });
     }
 }
 }
