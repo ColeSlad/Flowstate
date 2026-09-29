@@ -126,13 +126,29 @@ for one query (0.028 ms vs CUDA 0.123 ms), while CUDA wins at batch size 8
 
 ## Repeated benchmark report
 
-For repeated rate sweeps, capacity criteria, and exportable charts, use the
-[benchmark report workflow](docs/BENCHMARKING.md). It records five shuffled
-trials per case across 1K/100K/1M vectors, steady traffic, bursts, and real CUDA
-contention. Its capacity metric is the **highest tested offered rate that passes
-every trial's latency, rejection, and sample-count criteria**. This is separate
-from peak burst throughput. New GPU measurements are pending access to the Razer;
-the earlier results above remain the recorded GPU baseline.
+The [published 300-trial study](docs/benchmarks/2026-09-28/report.md) compares four
+policies across 1K/100K/1M vectors, steady traffic, bursts, and real CUDA contention.
+It offered **87.3 million requests**, completed **60.2 million searches**, and
+recorded overload rejections explicitly, with zero search/controller errors.
+Hardware: i9-12900H / RTX 3080 Ti Laptop, WSL 2; dimension 384, top-K 10.
+
+Across five 30-second trials per case:
+
+- **100K vectors:** GPU batching passed **1,000 offered QPS**, with p99
+  **7.97–14.84 ms** and zero rejections in every trial.
+- **1M vectors:** GPU immediate passed **100 offered QPS**, with p99
+  **12.30–14.72 ms** and zero rejections in every trial.
+- **1K vectors:** GPU batching and the heuristic both passed **60,000 offered
+  QPS**, the highest tested rate. Their limits were not reached by this grid.
+
+![Highest tested passing offered rate across dataset sizes](docs/benchmarks/2026-09-28/capacity.png)
+
+These are **highest tested passing rates**, not interpolated capacity limits.
+Every repetition must meet the p99, rejection, total SLO-violation, sample-count,
+and drain-time [criteria](docs/BENCHMARKING.md#capacity-criteria). The heuristic
+did not qualify at any tested rate for 100K or 1M vectors. All cases, individual
+measurements, variation, three charts, and reproduction metadata are in the
+[full report](docs/benchmarks/2026-09-28/report.md).
 
 ```sh
 python3 -m venv .venv-bench
@@ -143,7 +159,8 @@ python3 -m venv .venv-bench
 ```
 
 The complete default sweep schedules about 160 minutes of traffic, plus setup
-and queue drain. Open `benchmark-output/report/report.md` afterward. Use the same
+and queue drain; allow roughly four hours on the recorded laptop. Open
+`benchmark-output/report/report.md` afterward. Use the same
 command with `--resume` after an interruption. Python 3.11+ is required by this
 report tool; the earlier runners remain standard-library-only.
 

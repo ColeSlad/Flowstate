@@ -1,0 +1,7030 @@
+{
+  "schema": 1,
+  "utc": "2026-09-28T23:46:28.289713+00:00",
+  "identity": {
+    "binary_sha256": "3240760d9633328d98da992aebbe2ae2e99acee41f7fb072ca93899df1798778",
+    "source_sha256": "075ef6219c99435de05306298436d2cad765d14698f459b4f88badda75d7de7a",
+    "host": "RazerBlade17-22",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39"
+  },
+  "config": {
+    "vectors": [
+      1000,
+      100000,
+      1000000
+    ],
+    "rates": null,
+    "modes": [
+      "cpu_latency",
+      "gpu_immediate",
+      "gpu_batch",
+      "heuristic"
+    ],
+    "cuda": "on",
+    "cpu_backend": "avx2",
+    "dimension": 384,
+    "seed": 42,
+    "order_seed": 20260928,
+    "workers": 2,
+    "queue_capacity": 1024,
+    "batch_size": 32,
+    "max_wait_us": 2000,
+    "repetitions": 5,
+    "duration_seconds": 30,
+    "phase_seconds": 10,
+    "slo_ms": 15,
+    "max_rejection_fraction": 0.001,
+    "max_violation_fraction": 0.01,
+    "min_samples": 1000
+  },
+  "plan": [
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0001"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0002"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0003"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0004"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0005"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0006"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0007"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0008"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0009"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0010"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0011"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0012"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0013"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0014"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0015"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0016"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0017"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0018"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0019"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0020"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0021"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0022"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0023"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0024"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0025"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0026"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0027"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0028"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0029"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0030"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0031"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0032"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0033"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0034"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0035"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0036"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0037"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0038"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0039"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0040"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0041"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0042"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0043"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0044"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0045"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0046"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0047"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0048"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0049"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0050"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0051"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0052"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0053"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0054"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 1,
+      "id": "run-0055"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 1,
+      "id": "run-0056"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0057"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 1,
+      "id": "run-0058"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0059"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 1,
+      "id": "run-0060"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0061"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0062"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0063"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0064"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0065"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0066"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0067"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0068"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0069"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0070"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0071"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0072"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0073"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0074"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0075"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0076"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0077"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0078"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0079"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0080"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0081"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0082"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0083"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0084"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0085"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0086"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0087"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0088"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0089"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0090"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0091"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0092"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0093"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0094"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0095"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0096"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0097"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0098"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0099"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0100"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0101"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0102"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0103"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0104"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0105"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0106"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0107"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0108"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0109"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0110"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0111"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0112"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0113"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0114"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 2,
+      "id": "run-0115"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 2,
+      "id": "run-0116"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0117"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0118"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 2,
+      "id": "run-0119"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 2,
+      "id": "run-0120"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0121"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0122"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0123"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0124"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0125"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0126"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0127"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0128"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0129"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0130"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0131"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0132"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0133"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0134"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0135"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0136"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0137"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0138"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0139"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0140"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0141"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0142"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0143"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0144"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0145"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0146"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0147"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0148"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0149"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0150"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0151"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0152"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0153"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0154"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0155"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0156"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0157"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0158"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0159"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0160"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0161"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0162"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0163"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0164"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0165"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0166"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0167"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0168"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0169"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0170"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0171"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0172"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0173"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 3,
+      "id": "run-0174"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0175"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0176"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0177"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 3,
+      "id": "run-0178"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 3,
+      "id": "run-0179"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 3,
+      "id": "run-0180"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0181"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0182"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0183"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0184"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0185"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0186"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0187"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0188"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0189"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0190"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0191"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0192"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0193"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0194"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0195"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0196"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0197"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0198"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0199"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0200"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0201"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0202"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0203"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0204"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0205"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0206"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0207"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0208"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0209"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0210"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0211"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0212"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0213"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0214"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0215"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0216"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0217"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0218"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0219"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0220"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0221"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0222"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0223"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0224"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0225"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0226"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0227"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0228"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0229"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0230"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0231"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0232"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0233"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0234"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0235"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 4,
+      "id": "run-0236"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0237"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 4,
+      "id": "run-0238"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 4,
+      "id": "run-0239"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 4,
+      "id": "run-0240"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0241"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0242"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0243"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0244"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0245"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0246"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0247"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0248"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0249"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0250"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0251"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0252"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0253"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0254"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0255"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0256"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0257"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0258"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0259"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0260"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0261"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0262"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0263"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0264"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0265"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0266"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0267"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0268"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0269"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0270"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0271"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0272"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0273"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0274"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0275"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0276"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0277"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "burst",
+      "rate": 1500,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          1500,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          1500,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0278"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0279"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 1000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0280"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0281"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0282"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0283"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0284"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "burst",
+      "rate": 60000,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          60000,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          60000,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0285"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 150,
+      "phases": [
+        [
+          "steady",
+          30000,
+          150,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0286"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0287"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0288"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 1500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          1500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0289"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0290"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 500,
+      "phases": [
+        [
+          "steady",
+          30000,
+          500,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0291"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 10000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_immediate",
+      "repeat": 5,
+      "id": "run-0292"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0293"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 30000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          30000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0294"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "burst",
+      "rate": 150,
+      "phases": [
+        [
+          "quiet",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ],
+        [
+          "burst",
+          10000,
+          150,
+          32,
+          10,
+          0
+        ],
+        [
+          "contention",
+          10000,
+          150,
+          32,
+          10,
+          1
+        ],
+        [
+          "recovery",
+          10000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0295"
+    },
+    {
+      "vectors": 100000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "cpu_latency",
+      "repeat": 5,
+      "id": "run-0296"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 50,
+      "phases": [
+        [
+          "steady",
+          30000,
+          50,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "gpu_batch",
+      "repeat": 5,
+      "id": "run-0297"
+    },
+    {
+      "vectors": 1000,
+      "scenario": "steady",
+      "rate": 60000,
+      "phases": [
+        [
+          "steady",
+          30000,
+          60000,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0298"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 100,
+      "phases": [
+        [
+          "steady",
+          30000,
+          100,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0299"
+    },
+    {
+      "vectors": 1000000,
+      "scenario": "steady",
+      "rate": 10,
+      "phases": [
+        [
+          "steady",
+          30000,
+          10,
+          1,
+          10,
+          0
+        ]
+      ],
+      "mode": "heuristic",
+      "repeat": 5,
+      "id": "run-0300"
+    }
+  ],
+  "binary": "/home/flowstate/Flowstate/build-gpu/flowstate_load",
+  "label": "Razer/WSL2",
+  "git_revision": "a34f62f299f18329ff911083bcae5ed64e33dd6a",
+  "git_status": "",
+  "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  20\nOn-line CPU(s) list:                     0-19\nVendor ID:                               GenuineIntel\nModel name:                              12th Gen Intel(R) Core(TM) i9-12900H\nCPU family:                              6\nModel:                                   154\nThread(s) per core:                      2\nCore(s) per socket:                      10\nSocket(s):                               1\nStepping:                                3\nBogoMIPS:                                5836.79\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology tsc_reliable nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves avx_vnni vnmi umip waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       Microsoft\nVirtualization type:                     full\nL1d cache:                               480 KiB (10 instances)\nL1i cache:                               320 KiB (10 instances)\nL2 cache:                                12.5 MiB (10 instances)\nL3 cache:                                24 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-19\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Vulnerable: No microcode\nVulnerability Retbleed:                  Mitigation; Enhanced IBRS\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected",
+  "gpu": "NVIDIA GeForce RTX 3080 Ti Laptop GPU, 596.21, 16384 MiB",
+  "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Fri_May_08_10:53:34_AM_PDT_2026\nCuda compilation tools, release 13.2, V13.2.86\nBuild cuda_13.2.r13.2/compiler.37953736_0",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "compile_commands": [
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/query.cpp.o -c /home/flowstate/Flowstate/src/query.cpp",
+      "file": "/home/flowstate/Flowstate/src/query.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/query.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/backends/scalar.cpp.o -c /home/flowstate/Flowstate/src/backends/scalar.cpp",
+      "file": "/home/flowstate/Flowstate/src/backends/scalar.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/backends/scalar.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/backends/avx2.cpp.o -c /home/flowstate/Flowstate/src/backends/avx2.cpp",
+      "file": "/home/flowstate/Flowstate/src/backends/avx2.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/backends/avx2.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/runtime/runtime.cpp.o -c /home/flowstate/Flowstate/src/runtime/runtime.cpp",
+      "file": "/home/flowstate/Flowstate/src/runtime/runtime.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/runtime/runtime.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/runtime/scheduler.cpp.o -c /home/flowstate/Flowstate/src/runtime/scheduler.cpp",
+      "file": "/home/flowstate/Flowstate/src/runtime/scheduler.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/runtime/scheduler.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/telemetry/metrics.cpp.o -c /home/flowstate/Flowstate/src/telemetry/metrics.cpp",
+      "file": "/home/flowstate/Flowstate/src/telemetry/metrics.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/telemetry/metrics.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/telemetry/system.cpp.o -c /home/flowstate/Flowstate/src/telemetry/system.cpp",
+      "file": "/home/flowstate/Flowstate/src/telemetry/system.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/telemetry/system.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/policy/heuristic.cpp.o -c /home/flowstate/Flowstate/src/policy/heuristic.cpp",
+      "file": "/home/flowstate/Flowstate/src/policy/heuristic.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/policy/heuristic.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/workload.cpp.o -c /home/flowstate/Flowstate/src/workload.cpp",
+      "file": "/home/flowstate/Flowstate/src/workload.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/workload.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/local/cuda-13.2/bin/nvcc -forward-unknown-to-host-compiler -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 \"--generate-code=arch=compute_86,code=[compute_86,sm_86]\" --fmad=false -x cu -c /home/flowstate/Flowstate/src/backends/cuda.cu -o CMakeFiles/flowstate.dir/src/backends/cuda.cu.o",
+      "file": "/home/flowstate/Flowstate/src/backends/cuda.cu",
+      "output": "CMakeFiles/flowstate.dir/src/backends/cuda.cu.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/policy/laya.cpp.o -c /home/flowstate/Flowstate/src/policy/laya.cpp",
+      "file": "/home/flowstate/Flowstate/src/policy/laya.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/policy/laya.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_HAVE_NVML -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -ffp-contract=off -o CMakeFiles/flowstate.dir/src/policy/laya_http.cpp.o -c /home/flowstate/Flowstate/src/policy/laya_http.cpp",
+      "file": "/home/flowstate/Flowstate/src/policy/laya_http.cpp",
+      "output": "CMakeFiles/flowstate.dir/src/policy/laya_http.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DCPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO -DFLOWSTATE_COMPARISON_FILE=\\\"/home/flowstate/Flowstate/benchmarks/results/phase4.json\\\" -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_WEB_DIR=\\\"/home/flowstate/Flowstate/web\\\" -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -isystem /home/flowstate/Flowstate/build-gpu/_deps/httplib-src -O3 -DNDEBUG -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/flowstate_server.dir/src/server/telemetry_server.cpp.o -c /home/flowstate/Flowstate/src/server/telemetry_server.cpp",
+      "file": "/home/flowstate/Flowstate/src/server/telemetry_server.cpp",
+      "output": "CMakeFiles/flowstate_server.dir/src/server/telemetry_server.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/local/cuda-13.2/bin/nvcc -forward-unknown-to-host-compiler -DCPPHTTPLIB_USE_NON_BLOCKING_GETADDRINFO -DFLOWSTATE_COMPARISON_FILE=\\\"/home/flowstate/Flowstate/benchmarks/results/phase4.json\\\" -DFLOWSTATE_ENABLE_LAYA -DFLOWSTATE_WEB_DIR=\\\"/home/flowstate/Flowstate/web\\\" -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -isystem /home/flowstate/Flowstate/build-gpu/_deps/httplib-src -O3 -DNDEBUG -std=c++20 \"--generate-code=arch=compute_86,code=[compute_86,sm_86]\" -x cu -c /home/flowstate/Flowstate/src/server/contention.cu -o CMakeFiles/flowstate_server.dir/src/server/contention.cu.o",
+      "file": "/home/flowstate/Flowstate/src/server/contention.cu",
+      "output": "CMakeFiles/flowstate_server.dir/src/server/contention.cu.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_search.dir/src/main.cpp.o -c /home/flowstate/Flowstate/src/main.cpp",
+      "file": "/home/flowstate/Flowstate/src/main.cpp",
+      "output": "CMakeFiles/flowstate_search.dir/src/main.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_bench.dir/benchmarks/search_bench.cpp.o -c /home/flowstate/Flowstate/benchmarks/search_bench.cpp",
+      "file": "/home/flowstate/Flowstate/benchmarks/search_bench.cpp",
+      "output": "CMakeFiles/flowstate_bench.dir/benchmarks/search_bench.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_runtime_bench.dir/benchmarks/runtime_bench.cpp.o -c /home/flowstate/Flowstate/benchmarks/runtime_bench.cpp",
+      "file": "/home/flowstate/Flowstate/benchmarks/runtime_bench.cpp",
+      "output": "CMakeFiles/flowstate_runtime_bench.dir/benchmarks/runtime_bench.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_load.dir/benchmarks/load_bench.cpp.o -c /home/flowstate/Flowstate/benchmarks/load_bench.cpp",
+      "file": "/home/flowstate/Flowstate/benchmarks/load_bench.cpp",
+      "output": "CMakeFiles/flowstate_load.dir/benchmarks/load_bench.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/local/cuda-13.2/bin/nvcc -forward-unknown-to-host-compiler -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 \"--generate-code=arch=compute_86,code=[compute_86,sm_86]\" -x cu -c /home/flowstate/Flowstate/src/server/contention.cu -o CMakeFiles/flowstate_load.dir/src/server/contention.cu.o",
+      "file": "/home/flowstate/Flowstate/src/server/contention.cu",
+      "output": "CMakeFiles/flowstate_load.dir/src/server/contention.cu.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -I/home/flowstate/Flowstate/build-gpu/_deps/nlohmann_json-src/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_laya_tests.dir/tests/laya_tests.cpp.o -c /home/flowstate/Flowstate/tests/laya_tests.cpp",
+      "file": "/home/flowstate/Flowstate/tests/laya_tests.cpp",
+      "output": "CMakeFiles/flowstate_laya_tests.dir/tests/laya_tests.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_scheduler_tests.dir/tests/scheduler_tests.cpp.o -c /home/flowstate/Flowstate/tests/scheduler_tests.cpp",
+      "file": "/home/flowstate/Flowstate/tests/scheduler_tests.cpp",
+      "output": "CMakeFiles/flowstate_scheduler_tests.dir/tests/scheduler_tests.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_runtime_tests.dir/tests/runtime_tests.cpp.o -c /home/flowstate/Flowstate/tests/runtime_tests.cpp",
+      "file": "/home/flowstate/Flowstate/tests/runtime_tests.cpp",
+      "output": "CMakeFiles/flowstate_runtime_tests.dir/tests/runtime_tests.cpp.o"
+    },
+    {
+      "directory": "/home/flowstate/Flowstate/build-gpu",
+      "command": "/usr/bin/c++ -DFLOWSTATE_ENABLE_LAYA -I/home/flowstate/Flowstate/include -isystem /usr/local/cuda-13.2/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/flowstate_tests.dir/tests/search_tests.cpp.o -c /home/flowstate/Flowstate/tests/search_tests.cpp",
+      "file": "/home/flowstate/Flowstate/tests/search_tests.cpp",
+      "output": "CMakeFiles/flowstate_tests.dir/tests/search_tests.cpp.o"
+    }
+  ]
+}

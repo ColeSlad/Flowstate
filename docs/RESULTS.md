@@ -1,35 +1,65 @@
 # Results
 
-## Repeated-report tooling — 2026-09-28
+## Repeated CPU/GPU study — 2026-09-28–29 UTC
 
-The new [benchmark report workflow](BENCHMARKING.md) adds five shuffled trials
-per case, a 1K/100K/1M rate grid, exact offered-latency/SLO accounting, and a
-dynamic trace using the existing real CUDA competitor. It reports the highest
-tested steady rate meeting explicit p99, rejection, sample-count, and drain-time
-criteria in every trial. PNG/SVG charts cover capacity, latency versus load,
-and a predetermined burst/recovery trial. Individual measurements and full
-min–max variation are retained; no confidence intervals are inferred.
+The [full report](benchmarks/2026-09-28/report.md) contains **300 completed trials**:
+five seeded, shuffled repetitions of 60 cases across 1K/100K/1M vectors and four
+policies. The fixed workload uses 384-dimensional float32 vectors, top-K 10,
+seed 42, two AVX2 workers, a 1,024-request queue, and GPU batches up to 32 with a
+2 ms wait. Hardware is the i9-12900H / RTX 3080 Ti Laptop under WSL 2, using
+GCC 13.3.0, CUDA 13.2.86, and a clean `a34f62f` Release build.
 
-Local validation on the M3 Max completed all **27 short CPU-only trials** across
-1K/100K/1M vectors (three repetitions; 5-second steady cases at 50/100 QPS;
-2-second quiet/burst/recovery phases). All accepted requests completed without
-search or controller failures, and fully completed equivalent workloads had
-matching ID checksums. Tables and all three figures render and were visually
-inspected. These short trials deliberately do not meet the 1,000-sample capacity
-guard; they establish tooling behavior, not new resume-ready capacity numbers.
-Artifacts are local under ignored `benchmark-output/report-smoke/`.
-The 10 passing Mac Release tests include report statistics, native trace/resume,
-artifact-integrity checks, and the existing HTTP/runtime tests. Three unavailable
-backend tests explicitly skip.
+**Highest tested offered QPS passing every criterion in all five trials:**
 
-The Razer SSH connection timed out on three attempts. **The new GPU build,
-real-contention benchmark test, and full repeated GPU sweep remain pending**;
-the GPU measurements below are the earlier phase results, not a rerun. The
-workflow and exact reproduction commands are ready for when that host is reachable.
+| Vectors | AVX2 CPU | GPU immediate | GPU batch | Heuristic |
+| ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 30,000 | 1,000 | 60,000* | 60,000* |
+| 100,000 | 100 | 500 | 1,000 | — |
+| 1,000,000 | — | 100 | — | — |
+
+*The highest grid point passed; the experiment did not bound capacity there.
+A dash means no tested rate passed every criterion, not zero capacity. The grid
+is coarse: ratios between these table entries are not measured ratios of true
+maximum capacity. [Full criteria](BENCHMARKING.md#capacity-criteria) include
+successful-request offered p99 ≤15 ms, rejections ≤0.1%, total SLO violations
+≤1%, at least 1,000 completed requests, no search/controller errors, and at most
+5% drain overrun in every trial.
+
+At 100K vectors, GPU batching handled 1,000 offered QPS with p99 **7.97–14.84 ms**
+and zero rejections across all five trials. At 1M vectors, GPU immediate handled
+100 offered QPS with p99 **12.30–14.72 ms** and zero rejections. At 1K vectors,
+both batching and the heuristic passed 60,000 QPS; batching's worst observed
+rejection fraction was 0.0741%, while the heuristic rejected none.
+
+The complete sweep offered **87,318,000** requests, completed **60,169,059**,
+and rejected **27,148,941** under overload. Search failures and controller
+exceptions were both **zero**. All 60 dynamic trials recorded real competing CUDA
+kernels. Fully completed equivalent workloads had matching result-ID checksums.
+
+The heuristic's startup/routing behavior did not meet the full 15 ms criteria
+at any tested 100K or 1M rate. Latency was also non-monotonic with load in some
+cases. All failures and min–max variation remain in the report; thresholds and
+rates were fixed before collection. These finite trials do not establish
+indefinite capacity or production tail latency.
+
+Two interrupted trials were resumed after 160 and 278 completed records, using
+identical source/binary hashes and configuration. Completed measurements were
+retained; partial trials 161 and 279 were archived separately and rerun. The
+published CSV includes UTC timestamps, including the 19.3- and 3.4-minute gaps.
+No scheduler, kernel, or model optimization was introduced for this study.
+
+Validation: **all 15 Razer CUDA Release tests passed without skips**, including
+backend equivalence, native report/resume/integrity checks, and actual contention.
+Mac Release validation passed 10 tests with three unavailable-backend skips;
+a separate 27-trial CPU-only smoke run validated charts and sample-count guards.
+All final artifact hashes/accounting/checksums were revalidated, and all three
+PNG/SVG figures were visually reviewed. The [workflow](BENCHMARKING.md),
+[per-trial data](benchmarks/2026-09-28/trials.csv), and
+[compiler metadata](benchmarks/2026-09-28/toolchain.json) support reproduction.
 
 ## Status
 
-Phases 1–4 are complete: scalar, AVX2, and CUDA correctness checks pass,
+All five phases are complete: scalar, AVX2, and CUDA correctness checks pass,
 the measurements below demonstrate a CPU/GPU crossover, and concurrent runtime
 batching improves burst throughput. The heuristic responds to workload changes. Local Laya integration and evaluation
 are complete; its limitations and the static GPU baseline advantage are reported below.

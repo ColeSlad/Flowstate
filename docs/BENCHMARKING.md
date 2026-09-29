@@ -5,6 +5,12 @@ thresholds, backends, or model behavior. The default comparison is static CPU,
 GPU immediate, GPU batching, and the native 500 ms heuristic. Laya's separate
 evaluation remains in [RESULTS.md](RESULTS.md).
 
+The [completed 300-trial Razer study](benchmarks/2026-09-28/report.md) includes
+all measured cases, individual summaries with UTC timestamps, compiler/build
+metadata, the plotted burst telemetry, and PNG/SVG figures. It offered 87,318,000
+requests with zero search/controller errors. Raw per-trial folders remain under
+ignored `benchmark-output/`; the committed extract is about 1.3 MB.
+
 ## Run on the configured Razer
 
 From Ubuntu 24.04 in WSL, in the repository:

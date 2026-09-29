@@ -27,9 +27,9 @@ def plot_report(directory, manifest, summary):
     stamp = (f'{manifest["label"]} · {config["repetitions"]} planned trials/case · '
              f'{summary["completed_trials"]}/{summary["planned_trials"]} complete · {config["dimension"]}D · K=10')
 
-    def save(fig, name):
+    def save(fig, name, bottom=.065):
         fig.text(.01, .01, textwrap.fill(stamp, 130), color='#475569', fontsize=8)
-        fig.tight_layout(rect=(0, .065, 1, .90))
+        fig.tight_layout(rect=(0, bottom, 1, .90))
         for extension in ['png', 'svg']:
             fig.savefig(directory / f'{name}.{extension}', bbox_inches='tight')
         plt.close(fig)
@@ -41,11 +41,6 @@ def plot_report(directory, manifest, summary):
         cells = [next(c for c in summary['capacity'] if c['vectors'] == size and c['mode'] == mode) for size in sizes]
         ax.plot(sizes, [c['qps'] if c['qps'] is not None else math.nan for c in cells],
                 color=COLORS[mode], marker=['o', 's', '^', 'D', 'v'][index % 5], label=LABELS[mode])
-        # Missing evidence is an explicit annotation, never a zero-capacity measurement.
-        for size, cell in zip(sizes, cells):
-            if cell['qps'] is None:
-                ax.text(size, .025 + index * .055, f'{LABELS[mode]}: no claim',
-                        transform=ax.get_xaxis_transform(), fontsize=7, color=COLORS[mode], ha='center')
     ax.set_xscale('log')
     ax.set_xlim(sizes[0] / 1.6, sizes[-1] * 1.6)
     if any(c['qps'] is not None for c in summary['capacity']):
@@ -59,7 +54,18 @@ def plot_report(directory, manifest, summary):
     ax.set_xlabel('Dataset vectors')
     ax.set_ylabel('Offered queries / second')
     ax.legend(loc='upper right', fontsize=9)
-    save(fig, 'capacity')
+    # Keep missing-evidence labels outside the data area so they cannot hide a passing point.
+    missing = []
+    for size in sizes:
+        absent = [LABELS[c['mode']] for c in summary['capacity'] if c['vectors'] == size and c['qps'] is None]
+        if absent:
+            missing.append(f'{size:,} vectors: {", ".join(absent)}')
+    if missing:
+        note = textwrap.fill('No capacity claim — ' + '; '.join(missing), 130)
+        fig.text(.01, .065, note, fontsize=8, color='#475569', va='bottom')
+        save(fig, 'capacity', bottom=.10 + .035 * (note.count('\n') + 1))
+    else:
+        save(fig, 'capacity')
 
     fig, axes = plt.subplots(1, len(sizes), figsize=(5 * len(sizes), 4.8), squeeze=False)
     fig.suptitle('Tail latency as offered traffic increases', fontweight='bold')
@@ -122,8 +128,13 @@ def plot_report(directory, manifest, summary):
         ax.set_ylim(0, max(1, ax.get_ylim()[1]))
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     axes[1].set_yscale('symlog', linthresh=1)
+    axes[1].set_ylim(bottom=0)
     axes[1].axhline(config['slo_ms'], color='#be123c', linestyle='--', linewidth=1)
-    axes[0].legend(loc='upper right', fontsize=8, ncol=2)
+    handles, labels = axes[0].get_legend_handles_labels()
+    legend = dict(zip(labels, handles))
+    labels = [name for name in [*(LABELS[mode] for mode in modes), 'Offered rate'] if name in legend]
+    fig.legend([legend[name] for name in labels], labels, loc='upper center',
+               bbox_to_anchor=(.5, .94), fontsize=9, ncol=min(5, len(labels)), frameon=False)
     axes[-1].set_xlabel('Elapsed seconds · shaded interval requests real CUDA contention')
     if config['cuda'] == 'off':
         axes[-1].set_xlabel('Elapsed seconds · CPU-only, no GPU contention')
