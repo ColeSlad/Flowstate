@@ -44,6 +44,9 @@ body[data-connection=offline] .workspace, body[data-connection=offline] .metrics
 h1 { font-size: 34px; font-weight: 600; letter-spacing: -1.3px; line-height: 1.2; margin: 0 0 7px; }
 .intro p { margin: 0; color: var(--muted); }
 .intro .dataset { font-size: 13px; text-align: right; }
+.intro-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+.source-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 10px 16px; border: 1px solid var(--control-line); border-radius: 8px; background: var(--surface); font-size: 13px; font-weight: 600; text-decoration: none; }
+.source-button:hover { background: var(--track); }
 body[data-mode=recorded] #controls, body[data-mode=live] .recording { display: none; }
 .recording { border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; background: var(--surface); }
 .recording > p { color: var(--muted); font-size: 13px; margin: 10px 0 16px; }
@@ -182,7 +185,8 @@ footer small { display: block; margin-top: 2px; font-size: inherit; }
   .wordmark { font-size: 22px; }
   .intro { padding: 16px 0 26px; display: block; }
   h1 { font-size: 30px; }
-  .intro .dataset { text-align: left; margin-top: 10px; font-size: 12px; }
+  .intro-actions { align-items: flex-start; margin-top: 18px; }
+  .intro .dataset { text-align: left; font-size: 12px; }
   .recording { padding: 18px 16px; }
   .playback { flex-wrap: wrap; gap: 4px 12px; }
   .playback input { order: 3; flex-basis: 100%; }
