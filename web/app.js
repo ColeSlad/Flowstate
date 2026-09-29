@@ -2,6 +2,9 @@
 const $ = id => document.getElementById(id);
 const number = (value, digits = 0) => value == null ? '—' : Number(value).toLocaleString(undefined, {maximumFractionDigits: digits});
 const percent = value => value == null ? 'Unavailable' : `${number(value * 100, 0)}%`;
+const recorded = document.body.dataset.mode === 'recorded';
+const clockTime = milliseconds => `${Math.floor(milliseconds / 60000)}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, '0')}`;
+let recording, recordingIndex = 0, playbackTimer, playing = false;
 const policies = {
   cpu_latency: ['CPU latency', 'CPU execution without a batching delay.'],
   gpu_immediate: ['GPU immediate', 'GPU execution without a batching delay.'],
@@ -14,7 +17,7 @@ let controls = {traffic: 'low', top_k: 10, contention: false};
 function connection(state) {
   if (document.body.dataset.connection === state) return;
   document.body.dataset.connection = state;
-  $('connection-label').textContent = state === 'live' ? 'Connected' : 'Reconnecting';
+  $('connection-label').textContent = state === 'recorded' ? 'Recorded demo' : state === 'live' ? 'Connected' : recorded ? 'Recording unavailable' : 'Reconnecting';
   $('controls').disabled = state !== 'live' || pending;
 }
 function renderControls() {
@@ -32,7 +35,7 @@ function renderControls() {
   for (const option of $('top-k').options) option.disabled = latest && Number(option.value) > latest.vectors;
 }
 async function updateControls(change) {
-  if (pending) return;
+  if (recorded || pending) return;
   pending = true; $('controls').disabled = true; $('control-feedback').textContent = '';
   try {
     const response = await fetch('/api/controls', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({...controls, ...change})});
@@ -55,11 +58,12 @@ function chart() {
   const left = 47, right = width - 12, top = 12, bottom = height - 28;
   $('latency-chart').setAttribute('viewBox', `0 0 ${width} ${height}`);
   $('chart-empty').setAttribute('x', width / 2); $('chart-empty').setAttribute('y', height / 2);
-  const end = latest?.uptime_ms || 0, start = end - 60000;
+  const end = recording ? recording.samples.at(-1).uptime_ms : latest?.uptime_ms || 0;
+  const start = recording ? recording.samples[0].uptime_ms : end - 60000;
   const samples = history.filter(value => value.time >= start);
   const values = samples.flatMap(value => [value.p95, value.p99]).filter(value => value != null);
   const max = Math.max(20, ...values) * 1.12;
-  const x = time => left + (time - start) / Math.max(60000, end - start) * (right - left);
+  const x = time => left + (time - start) / Math.max(1, end - start) * (right - left);
   const y = value => bottom - value / max * (bottom - top);
   const ns = 'http://www.w3.org/2000/svg';
   $('chart-grid').replaceChildren();
@@ -72,7 +76,7 @@ function chart() {
   }
   for (let i = 0; i <= 4; i++) {
     const label = document.createElementNS(ns, 'text'); label.setAttribute('x', left + (right - left) * i / 4); label.setAttribute('y', height - 6); label.setAttribute('text-anchor', i === 0 ? 'start' : i === 4 ? 'end' : 'middle');
-    label.textContent = i === 4 ? 'Now' : `−${(4 - i) * 15}s`; $('chart-grid').append(label);
+    label.textContent = recording ? `${number((end - start) * i / 4000)}s` : i === 4 ? 'Now' : `−${(4 - i) * 15}s`; $('chart-grid').append(label);
   }
   const path = key => {
     let drawing = false, previousTime = 0;
@@ -87,12 +91,12 @@ function chart() {
   $('p95-line').setAttribute('d', path('p95')); $('p99-line').setAttribute('d', path('p99'));
   $('slo-line').setAttribute('d', `M${left},${y(15)} L${right},${y(15)}`);
   $('chart-empty').setAttribute('visibility', values.length ? 'hidden' : 'visible');
-  $('chart-description').textContent = `Live latency over the last 60 seconds. Current p95 ${number(latest?.p95_ms, 1)} ms; p99 ${number(latest?.p99_ms, 1)} ms.`;
+  $('chart-description').textContent = `${recorded ? 'Recorded latency up to the selected moment' : 'Live latency over the last 60 seconds'}. Current p95 ${number(latest?.p95_ms, 1)} ms; p99 ${number(latest?.p99_ms, 1)} ms.`;
 }
 new ResizeObserver(chart).observe($('latency-chart'));
 function render(state) {
   if (latest && state.uptime_ms < latest.uptime_ms) { history = []; transitions = []; lastPolicy = undefined; }
-  latest = state; lastEvent = Date.now(); connection('live');
+  latest = state; lastEvent = Date.now(); connection(recorded ? 'recorded' : 'live');
   if (!pending && Date.now() - changedAt > 1000) { controls = state.controls; renderControls(); }
   $('dataset-shape').textContent = `${number(state.vectors)} vectors × ${number(state.dimension)} dimensions`;
   $('dataset-backends').textContent = state.gpu_available ? `${state.cpu_backend.toUpperCase()} + CUDA · deterministic dataset` : `${state.cpu_backend.toUpperCase()} · CPU-only runtime`;
@@ -115,12 +119,12 @@ function render(state) {
   $('policy-name').textContent = name; $('policy-description').textContent = description;
   if (state.policy !== lastPolicy) {
     transitions.unshift({name, time: state.uptime_ms}); transitions = transitions.slice(0, 6); lastPolicy = state.policy;
-    $('transitions').replaceChildren(...transitions.map(value => {
-      const row = document.createElement('li'), label = document.createElement('span'), time = document.createElement('time');
-      label.textContent = value.name; time.textContent = `${Math.floor(value.time / 60000)}:${String(Math.floor(value.time / 1000) % 60).padStart(2, '0')}`;
-      row.append(label, time); return row;
-    }));
   }
+  $('transitions').replaceChildren(...transitions.map(value => {
+    const row = document.createElement('li'), label = document.createElement('span'), time = document.createElement('time');
+    label.textContent = value.name; time.textContent = clockTime(value.time - (recording?.samples[0].uptime_ms || 0));
+    row.append(label, time); return row;
+  }));
   $('model-status').hidden = state.controller !== 'laya';
   $('confidence').textContent = state.laya.confidence == null ? 'Unavailable' : `${number(state.laya.confidence * 100, 1)}%`;
   const status = state.laya.status.replaceAll('_', ' ');
@@ -135,7 +139,7 @@ function render(state) {
 }
 let events, reconnectTimer, retryDelay = 1000, pageHidden = false;
 function connect() {
-  if (pageHidden) return;
+  if (recorded || pageHidden) return;
   clearTimeout(reconnectTimer);
   events?.close();
   const stream = new EventSource('/events');
@@ -156,20 +160,29 @@ function connect() {
     }
   };
 }
-connect();
-setInterval(() => { if (lastEvent && Date.now() - lastEvent > 2500) connection('offline'); }, 1000);
+if (!recorded) {
+  document.title = 'Flowstate — Live runtime';
+  $('intro-description').textContent = 'Live CPU and GPU routing.';
+  connect();
+  setInterval(() => { if (lastEvent && Date.now() - lastEvent > 2500) connection('offline'); }, 1000);
+}
 window.addEventListener('pagehide', () => {
+  if (recorded) { pauseRecording(); return; }
   pageHidden = true; clearTimeout(reconnectTimer); events?.close(); connection('offline');
 });
 window.addEventListener('pageshow', () => {
+  if (recorded) return;
   pageHidden = false;
   if (!events || events.readyState === EventSource.CLOSED) connect();
 });
 
-async function comparison() {
+async function comparison(saved) {
   try {
-    const response = await fetch('/api/comparison'); if (!response.ok) throw new Error();
-    const data = await response.json();
+    let data = saved;
+    if (!data) {
+      const response = await fetch('/api/comparison'); if (!response.ok) throw new Error();
+      data = await response.json();
+    }
     $('comparison-setup').textContent = `${data.hardware} · ${number(data.vectors)} × ${data.dimension} · ${data.date}`;
     const names = {cpu_latency: 'Static CPU (AVX2)', gpu_immediate: 'Static GPU', gpu_batch: 'Static GPU batching', heuristic: 'Heuristic', laya: 'Local Laya (gated)'};
     $('comparison-rows').replaceChildren(...data.modes.map(value => {
@@ -181,4 +194,86 @@ async function comparison() {
     }));
   } catch { $('comparison-setup').textContent = 'Recorded comparison unavailable.'; }
 }
-comparison();
+
+const stages = {
+  quiet: ['Quiet', 'Light traffic runs on the CPU.'],
+  burst: ['Traffic burst', 'A burst builds a queue; the controller shifts new searches to GPU batches.'],
+  contention: ['GPU contention', 'A competing GPU workload is enabled; routing responds to measured contention.'],
+  quiet_return: ['Recovery', 'Traffic drops. Queued work drains before CPU routing returns.']
+};
+function pauseRecording() {
+  clearTimeout(playbackTimer); playing = false;
+  $('play-recording').textContent = recording && recordingIndex === recording.samples.length - 1 ? 'Replay' : 'Play recording';
+}
+function showRecording(index) {
+  recordingIndex = index;
+  const samples = recording.samples, state = samples[index], firstTime = samples[0].uptime_ms;
+  // Rebuild from the captured prefix so seeking cannot invent history or retain future data.
+  latest = undefined; history = []; transitions = []; lastPolicy = undefined;
+  for (const sample of samples.slice(0, index)) {
+    history.push({time: sample.uptime_ms, p95: sample.p95_ms, p99: sample.p99_ms});
+    if (sample.policy !== lastPolicy) transitions.unshift({name: policies[sample.policy][0], time: sample.uptime_ms});
+    lastPolicy = sample.policy;
+  }
+  transitions = transitions.slice(0, 6);
+  render(state);
+  $('recording-position').value = index;
+  const elapsed = clockTime(state.uptime_ms - firstTime), duration = clockTime(samples.at(-1).uptime_ms - firstTime);
+  $('recording-time').textContent = `${elapsed} / ${duration}`;
+  $('recording-position').setAttribute('aria-valuetext', `${elapsed} of ${duration}, ${stages[state.stage][0]}`);
+  $('recording-stage').textContent = stages[state.stage][1];
+  document.querySelectorAll('[data-stage]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.stage === state.stage)));
+  $('runtime-note').textContent = `${number(state.total_completed)} searches completed since runtime start · whole-system utilization · recorded`;
+  if (!playing || index === samples.length - 1) pauseRecording();
+}
+function advanceRecording() {
+  if (!playing || recordingIndex >= recording.samples.length - 1) return;
+  const delay = recording.samples[recordingIndex + 1].uptime_ms - recording.samples[recordingIndex].uptime_ms;
+  playbackTimer = setTimeout(() => { showRecording(recordingIndex + 1); advanceRecording(); }, delay);
+}
+async function loadRecording() {
+  document.title = 'Flowstate — Recorded GPU demo';
+  try {
+    const response = await fetch('/data/demo.json');
+    if (!response.ok) throw new Error('Recording could not be loaded.');
+    const data = await response.json();
+    if (data.schema_version !== 1 || !Array.isArray(data.samples) || data.samples.length < 2 || !data.comparison)
+      throw new Error('Recording format is invalid.');
+    for (const [i, sample] of data.samples.entries()) {
+      if (!stages[sample.stage] || !policies[sample.policy] || !Number.isFinite(sample.uptime_ms) ||
+          (i && sample.uptime_ms <= data.samples[i - 1].uptime_ms)) throw new Error('Recording timeline is invalid.');
+    }
+    recording = data;
+    $('recording-description').textContent = `${data.hardware} · captured ${data.date} · ${data.samples.length} measured snapshots. Play or jump to a stage.`;
+    $('chart-period').textContent = 'Recording timeline';
+    $('recording-position').max = data.samples.length - 1;
+    for (const [key, [label]] of Object.entries(stages)) {
+      const index = data.samples.findIndex(sample => sample.stage === key);
+      if (index < 0) continue;
+      const button = document.createElement('button'); button.type = 'button'; button.dataset.stage = key; button.textContent = label;
+      button.addEventListener('click', () => { pauseRecording(); showRecording(index); });
+      $('recording-chapters').append(button);
+    }
+    showRecording(0);
+    $('play-recording').disabled = false; $('recording-position').disabled = false;
+    await comparison(data.comparison);
+  } catch (error) {
+    pauseRecording(); connection('offline');
+    $('play-recording').disabled = true; $('recording-position').disabled = true;
+    $('recording-description').textContent = 'The recording could not be loaded. Reload the page or use the report links below.';
+    $('control-feedback').textContent = error.message;
+    $('comparison-setup').textContent = 'Recorded comparison unavailable. See the linked benchmark report.';
+  }
+}
+$('play-recording').addEventListener('click', () => {
+  if (!recording) return;
+  if (playing) { pauseRecording(); return; }
+  if (recordingIndex === recording.samples.length - 1) showRecording(0);
+  playing = true; $('play-recording').textContent = 'Pause'; advanceRecording();
+});
+$('recording-position').addEventListener('input', event => {
+  if (!recording) return;
+  pauseRecording(); showRecording(Number(event.target.value));
+});
+document.addEventListener('visibilitychange', () => { if (recorded && document.hidden) pauseRecording(); });
+if (recorded) loadRecording(); else comparison();

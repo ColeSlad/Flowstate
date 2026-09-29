@@ -4,21 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f7f4">
-  <title>Flowstate — Live runtime</title>
+  <title>Flowstate — CPU and GPU search</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
-<body data-connection="connecting">
+<body data-mode="recorded" data-connection="connecting">
   <div class="page">
     <header class="topbar">
       <a class="wordmark" href="/" aria-label="Flowstate home"><svg viewBox="0 0 30 28" aria-hidden="true"><path d="M3 7h9c6 0 5 14 11 14h4M3 21h9c6 0 5-14 11-14h4"/><circle cx="3" cy="7" r="2"/><circle cx="27" cy="21" r="2"/></svg>flowstate<span>.</span></a>
-      <div class="connection" role="status"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Connecting</span></div>
+      <div class="connection" role="status"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Loading</span></div>
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <div><h1 id="page-title">Work follows load.</h1><p>Live CPU and GPU routing.</p></div>
+        <div><h1 id="page-title">Work follows load.</h1><p id="intro-description">See how a search engine shares work between CPU and GPU.</p></div>
         <p class="dataset" id="dataset-shape">Waiting for runtime</p>
+      </section>
+
+      <section class="recording" id="recording" aria-labelledby="recording-title">
+        <div class="section-heading"><h2 id="recording-title">Recorded GPU demo</h2><span class="muted">Playback · no live searches</span></div>
+        <p id="recording-description">Loading measured telemetry from the Razer GPU run…</p>
+        <div class="playback">
+          <button id="play-recording" type="button" disabled>Play recording</button>
+          <label class="sr-only" for="recording-position">Recording position</label>
+          <input id="recording-position" type="range" min="0" max="1" value="0" step="1" disabled>
+          <output id="recording-time" for="recording-position">0:00 / 0:00</output>
+        </div>
+        <div class="chapters" id="recording-chapters" role="group" aria-label="Jump to recorded stage"></div>
+        <p class="recording-stage" id="recording-stage" aria-live="polite"></p>
+        <p class="fine-print">All values are recorded measurements. Latency spikes and rejected searches are retained. <a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/RESULTS.md#browser-dashboard-and-real-contention--2026-09-25">Capture details</a> · <a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/benchmarks/2026-09-28/report.md">300-trial benchmark report</a></p>
+        <noscript><p>Enable JavaScript to play the recording, or open the benchmark report above.</p></noscript>
       </section>
 
       <fieldset class="controls" id="controls" disabled>
@@ -46,7 +61,7 @@
       </fieldset>
       <p class="control-feedback" id="control-feedback" role="alert"></p>
 
-      <section class="metrics" aria-label="Live runtime metrics">
+      <section class="metrics" aria-label="Runtime metrics">
         <article><p>Incoming requests</p><div><strong id="arrival" class="live-value">—</strong><span class="metric-unit">/ sec</span></div><small><span id="throughput">—</span> completed / sec</small></article>
         <article><p>Queue depth</p><div><strong id="queue" class="live-value">—</strong><span class="metric-unit">requests</span></div></article>
         <article><p>p95 latency</p><div><strong id="p95" class="live-value">—</strong><span class="metric-unit">ms</span></div></article>
@@ -80,7 +95,7 @@
           </section>
         </div>
         <section class="chart-panel" aria-labelledby="latency-title">
-          <div class="section-heading"><div class="chart-heading"><h2 id="latency-title">Latency</h2><span class="muted">Last 60 seconds</span></div><div class="legend"><span><i class="p95-key"></i>p95</span><span><i class="p99-key"></i>p99</span><span><i class="slo-key"></i>15 ms target</span></div></div>
+          <div class="section-heading"><div class="chart-heading"><h2 id="latency-title">Latency</h2><span class="muted" id="chart-period">Last 60 seconds</span></div><div class="legend"><span><i class="p95-key"></i>p95</span><span><i class="p99-key"></i>p99</span><span><i class="slo-key"></i>15 ms target</span></div></div>
           <svg class="latency-chart" id="latency-chart" viewBox="0 0 1000 180" role="img" aria-labelledby="chart-description"><title id="chart-description">Waiting for live latency samples</title><g id="chart-grid"></g><path id="slo-line"/><path id="p95-line"/><path id="p99-line"/><text id="chart-empty" x="500" y="90" text-anchor="middle">Waiting for samples</text></svg>
           <div class="chart-foot"><span>Since start</span><div><span><b id="rejected">0</b> rejected</span><span><b id="failures">0</b> failed</span><span><b id="violations">0</b> SLO misses</span></div></div>
         </section>

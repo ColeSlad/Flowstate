@@ -183,6 +183,16 @@ policy, and latency share one primary panel; native disclosure controls reveal
 secondary runtime details and the benchmark table. Chart labels show relative time,
 and the SVG resizes independently of incoming telemetry.
 
+Static hosting of `web/` selects recorded mode through the HTML `data-mode`
+marker. The native server changes that marker to `live` before serving the page;
+mode selection never depends on a failed connection or hostname. Recorded mode
+loads only `data/demo.json`, renders the unchanged captured snapshots with the
+same renderer, and makes no API or EventSource calls. Playback starts paused,
+uses captured timestamp intervals, pauses when hidden, and stops at the last
+frame. Seeking rebuilds chart/history from the selected capture prefix. Recorded
+labels and source links remain visible; live workload controls are hidden and
+disabled. A missing recording produces an explicit unavailable state.
+
 The demo-only contention object owns a separate nonblocking CUDA stream, a small
 device buffer, and a joinable thread. While enabled it repeatedly launches a
 compute kernel and synchronizes its own stream, competing for real GPU resources.

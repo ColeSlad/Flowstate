@@ -1,7 +1,7 @@
 # Progress
 
 ## Current Phase
-All five phases complete. Repeated CPU/GPU study complete; report and data published.
+All five phases complete. Repeated study and standalone recorded demo complete.
 
 ## Completed
 - [x] Phase 1 — Compute backends
@@ -11,6 +11,7 @@ All five phases complete. Repeated CPU/GPU study complete; report and data publi
 - [x] Phase 5 — Dashboard and polish
 
 ## Current Notes
+- Standalone demo: static `web/` hosts the 76 unchanged GPU capture snapshots with explicit recorded labeling, play/pause, seeking, stage navigation, and source/report links. The native server selects live mode explicitly. Vercel settings and local preview instructions are included. Data equality/provenance, all-frame playback, keyboard/lifecycle/error handling, no backend requests, desktop/phone/dark appearance, and live-browser regressions pass. Mac Release build and all 10 available CTests pass (3 unavailable AVX2/CUDA tests skip). No compute or scheduler changes; no new performance claims. Ready to import on Vercel; no public deployment has been created.
 - Repeated benchmark report (2026-09-28–29 UTC): all 300 trials complete, with 87.3M offered requests, 60.2M completed searches, and zero search/controller errors. Five shuffled repetitions cover 1K/100K/1M vectors and four policies; all 60 dynamic cases verify real CUDA contention. At 100K, GPU batching passes 1,000 offered QPS with p99 7.97–14.84 ms and zero rejections in every trial. All 15 Razer CUDA tests pass; Mac tests and the 27-trial tooling smoke run pass with unavailable backends skipped. Full artifact/hash/accounting checks and chart review pass. Compact data, three PNG/SVG charts, compiler metadata, limitations, and interrupted-run history are in `docs/benchmarks/2026-09-28/report.md`; reproduction is in `docs/BENCHMARKING.md`. Runtime policies and backends were unchanged.
 - UI refresh (2026-09-27): simplified the dashboard into one primary panel, shortened labels, and moved secondary measurements/history into Runtime details. README screenshot uses real local CPU telemetry; the Razer was unreachable for a fresh GPU capture. Build, dashboard HTTP test, browser regressions, and desktop/phone/keyboard appearance checks pass.
 - Canonical origin is `git@github.com:ColeSlad/Flowstate.git`. The source spec records the user-approved Jev → local Laya amendment.

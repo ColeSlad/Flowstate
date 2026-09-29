@@ -50,6 +50,8 @@ async function holdStream(url) {
     page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
     const live = () => page.waitForFunction(() => document.body.dataset.connection === 'live');
     await page.goto(url); await live();
+    assert.equal(await page.locator('body').getAttribute('data-mode'), 'live');
+    assert.equal(await page.locator('#recording').isVisible(), false);
     assert.equal(await page.locator('#top-k').inputValue(), '20');
     await page.locator('#top-k').selectOption('10');
     await page.waitForFunction(() => !document.querySelector('#controls').disabled);

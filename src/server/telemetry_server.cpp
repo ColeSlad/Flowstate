@@ -249,7 +249,13 @@ int main(int argc,char** argv) {
                 return httplib::Server::HandlerResponse::Unhandled;
             });
             for(const auto& asset:std::vector<std::pair<std::string,std::string>>{{"index.html","text/html"},{"app.js","text/javascript"},{"style.css","text/css"},{"favicon.svg","image/svg+xml"}}) {
-                const auto content=read_file(std::string(FLOWSTATE_WEB_DIR)+"/"+asset.first);
+                auto content=read_file(std::string(FLOWSTATE_WEB_DIR)+"/"+asset.first);
+                if(asset.first=="index.html") {
+                    const std::string marker="data-mode=\"recorded\"";
+                    const auto position=content.find(marker);
+                    if(position==std::string::npos) throw std::runtime_error("Dashboard mode marker missing");
+                    content.replace(position,marker.size(),"data-mode=\"live\"");
+                }
                 server.Get(asset.first=="index.html"?"/":"/"+asset.first,[content,type=asset.second](const auto&,auto& response) { response.set_content(content,type); });
             }
             const auto comparison=read_file(FLOWSTATE_COMPARISON_FILE);

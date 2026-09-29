@@ -317,11 +317,71 @@ default-gated calls fell back; ungated Laya chose GPU batching throughout and
 performed similarly to static batching. The heuristic is the practical default.
 See the full [results](docs/RESULTS.md).
 
-## Launch the dashboard
+## Standalone recorded demo (no GPU or backend required)
+
+The `web/` folder can be hosted as a static site. It opens a clearly labeled
+**Recorded GPU demo** with play/pause, a seek slider, and four stage shortcuts:
+quiet traffic, burst, GPU contention, and recovery. It starts paused and shows
+the actual captured measurements, including latency spikes and overload
+rejections. Playback controls navigate the recording; they do not run searches
+or change the measured workload.
+
+Preview locally from the repository root:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory web
+# Open http://127.0.0.1:8000
+```
+
+Use an HTTP server rather than opening `index.html` directly, since the page
+loads its recorded JSON with `fetch`.
+
+To publish on Vercel:
+
+1. Import `ColeSlad/Flowstate` at <https://vercel.com/new>.
+2. Set **Root Directory** to `web` and **Framework Preset** to **Other**.
+3. Leave **Build Command** blank and use **Output Directory** `.`.
+   `web/vercel.json` also supplies these static build settings.
+4. Deploy with `main` as the production branch. Future pushes to `main` deploy
+   automatically through the Git integration.
+
+There are no frontend packages to install, environment variables, API keys,
+serverless functions, or GPU services needed for the recorded site. Vercel hosts
+the playback page; the recorded computations were performed on the Razer.
+[Vercel static configuration](https://vercel.com/docs/builds/configure-a-build).
+
+### Recording provenance
+
+`web/data/demo.json` contains all 76 unchanged snapshots from the
+[September 25 GPU demo](docs/RESULTS.md#browser-dashboard-and-real-contention--2026-09-25),
+plus an exact copy of `benchmarks/results/phase4.json` for the separate comparison
+table. Its metadata records the original capture file's SHA-256. The full original
+capture is retained at ignored `benchmark-output/dashboard/demo.json`.
+
+The clip spans about 38 seconds, starting about 9 seconds after runtime startup;
+cumulative counters include that startup. Playback and policy-history timestamps
+are relative to the first captured frame. No telemetry is interpolated or
+generated. Latency is the runtime histogram upper bound. This demo is distinct
+from the [300-trial performance study](docs/benchmarks/2026-09-28/report.md);
+neither the site nor the recording claims the overload trace meets the 15 ms SLO.
+
+Optional browser checks use installed Chrome and `playwright-core` (kept outside
+the repository); they check every captured frame, playback/seek/error behavior,
+mobile layout, and that recorded mode makes no backend requests:
+
+```sh
+npm install --prefix /tmp/flowstate-browser playwright-core
+NODE_PATH=/tmp/flowstate-browser/node_modules node tests/recorded_browser_tests.cjs
+```
+
+## Launch the live dashboard
 
 The dashboard is optional and uses pinned cpp-httplib 0.57.1 and nlohmann/json
 3.12.0 dependencies. There is no frontend build step or Node dependency at runtime.
 The default compute-only build fetches neither package.
+The native server selects live mode in the same page, with real traffic controls
+and HTTP/SSE telemetry. Static hosting always selects recorded mode; a failed
+live connection never silently switches to recorded measurements.
 
 ```sh
 # CUDA demo; Laya can be enabled separately with -DFLOWSTATE_ENABLE_LAYA=ON.

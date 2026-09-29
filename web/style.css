@@ -26,7 +26,7 @@ a { color: inherit; }
 button, select, input { font: inherit; color: inherit; }
 button, summary, .switch-label { cursor: pointer; }
 button:disabled, select:disabled { cursor: default; }
-button:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible,
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible,
 input:focus-visible + .switch-track { outline: 3px solid var(--focus); outline-offset: 4px; }
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -47,6 +47,20 @@ body[data-connection=offline] .workspace, body[data-connection=offline] .metrics
 h1 { font-size: 34px; font-weight: 600; letter-spacing: -1.3px; line-height: 1.2; margin: 0 0 7px; }
 .intro p { margin: 0; color: var(--muted); }
 .intro .dataset { font-size: 13px; text-align: right; }
+body[data-mode=recorded] #controls, body[data-mode=live] .recording { display: none; }
+.recording { border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; background: var(--surface); }
+.recording > p { color: var(--muted); font-size: 13px; margin: 10px 0 16px; }
+.playback { display: flex; align-items: center; gap: 16px; }
+.playback button, .chapters button { border: 1px solid var(--control-line); border-radius: 7px; background: var(--surface); min-height: 44px; padding: 8px 14px; }
+.playback button { min-width: 130px; background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.playback input { flex: 1; min-width: 0; accent-color: var(--cpu); min-height: 44px; }
+.playback output { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.chapters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chapters button { font-size: 12px; }
+.chapters button[aria-pressed=true] { background: var(--track); border-color: var(--cpu); }
+.chapters button:hover { background: var(--track); }
+.recording .recording-stage { color: var(--ink); min-height: 1.5em; }
+.recording .fine-print { font-size: 12px; margin-bottom: 0; }
 .controls { display: grid; grid-template-columns: 1.6fr 1fr .85fr; gap: 36px; padding: 0; margin: 0; border: 0; min-width: 0; }
 .control-group { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
 .control-label { font-size: 12px; font-weight: 600; }
@@ -166,6 +180,11 @@ footer a:hover { text-decoration: underline; }
   .intro { padding: 16px 0 26px; display: block; }
   h1 { font-size: 30px; }
   .intro .dataset { text-align: left; margin-top: 10px; font-size: 12px; }
+  .recording { padding: 18px 16px; }
+  .recording > .section-heading { flex-wrap: wrap; gap: 4px 12px; }
+  .playback { flex-wrap: wrap; gap: 4px 12px; }
+  .playback input { order: 3; flex-basis: 100%; }
+  .playback output { margin-left: auto; }
   .controls { grid-template-columns: 1fr 1fr; gap: 18px 24px; }
   .traffic-group { grid-column: 1/-1; }
   .metrics { grid-template-columns: 1fr 1fr; gap: 22px 20px; padding: 28px 0; }

@@ -66,7 +66,10 @@ try:
         assert initial['gpu_utilization'] is None and initial['gpu_memory_free_bytes'] is None
     for path, fragment in [('/', 'Work follows load.'), ('/app.js', 'EventSource'), ('/style.css', 'prefers-reduced-motion')]:
         with request(path) as response:
-            assert fragment in response.read().decode()
+            content = response.read().decode()
+            assert fragment in content
+            if path == '/':
+                assert 'data-mode="live"' in content and 'data-mode="recorded"' not in content
     with request('/api/comparison') as response:
         assert len(json.load(response)['modes']) == 5
     valid = {'traffic': 'burst', 'top_k': 50, 'contention': False}
