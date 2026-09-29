@@ -12,18 +12,19 @@
 <body data-mode="recorded" data-connection="connecting">
   <div class="page">
     <header class="topbar">
-      <a class="wordmark" href="/" aria-label="Flowstate home"><svg viewBox="0 0 30 28" aria-hidden="true"><path d="M3 7h9c6 0 5 14 11 14h4M3 21h9c6 0 5-14 11-14h4"/><circle cx="3" cy="7" r="2"/><circle cx="27" cy="21" r="2"/></svg>flowstate<span>.</span></a>
-      <div class="connection" role="status"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Loading</span></div>
+      <a class="wordmark" href="/" aria-label="Flowstate home"><svg viewBox="0 0 30 28" aria-hidden="true"><path d="M3 7h9c6 0 5 14 11 14h4M3 21h9c6 0 5-14 11-14h4"/></svg>flowstate</a>
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <div><h1 id="page-title">Work follows load.</h1><p id="intro-description">See how a search engine shares work between CPU and GPU.</p></div>
+        <div><h1 id="page-title">Work follows load.</h1><p id="intro-description">See how a search engine shares work between CPU and GPU.</p><p class="connection" id="connection-label" role="status">Loading measurements…</p></div>
         <p class="dataset" id="dataset-shape">Waiting for runtime</p>
       </section>
 
       <section class="recording" id="recording" aria-labelledby="recording-title">
-        <div class="section-heading"><h2 id="recording-title">Recorded GPU demo</h2><span class="muted">Playback · no live searches</span></div>
+        <h2 id="recording-title">Recorded GPU demo</h2>
+        <p class="recording-subtitle">Playback only. No live searches.</p>
         <p id="recording-description">Loading measured telemetry from the Razer GPU run…</p>
+        <p id="recording-caption" class="recording-caption"></p>
         <div class="playback">
           <button id="play-recording" type="button" disabled>Play recording</button>
           <label class="sr-only" for="recording-position">Recording position</label>
@@ -32,7 +33,8 @@
         </div>
         <div class="chapters" id="recording-chapters" role="group" aria-label="Jump to recorded stage"></div>
         <p class="recording-stage" id="recording-stage" aria-live="polite"></p>
-        <p class="fine-print">All values are recorded measurements. Latency spikes and rejected searches are retained. <a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/RESULTS.md#browser-dashboard-and-real-contention--2026-09-25">Capture details</a> · <a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/benchmarks/2026-09-28/report.md">300-trial benchmark report</a></p>
+        <p class="fine-print">All values are recorded measurements. Latency spikes and rejected searches are retained.</p>
+        <div class="recording-links"><a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/RESULTS.md#browser-dashboard-and-real-contention--2026-09-25">Capture details</a><a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/benchmarks/2026-09-28/report.md">300-trial benchmark report</a></div>
         <noscript><p>Enable JavaScript to play the recording, or open the benchmark report above.</p></noscript>
       </section>
 
@@ -71,7 +73,7 @@
       <div class="workspace">
         <div class="runtime-grid">
           <section class="routing-panel" aria-labelledby="routing-title">
-            <div class="section-heading"><h2 id="routing-title">Routing</h2><span class="muted">Completions · last second</span></div>
+            <div class="section-heading"><h2 id="routing-title">Routing</h2><span class="muted">Completions in the last second</span></div>
             <div class="backend cpu-backend">
               <div class="backend-heading"><div><strong>CPU</strong><span class="backend-kind" id="cpu-kind">—</span></div><strong class="backend-share" id="cpu-share">—</strong></div>
               <div class="bar-track"><div class="bar-fill" id="cpu-bar"></div></div>
@@ -105,7 +107,7 @@
         <summary><span>Runtime details</span><span class="disclosure-hint">History &amp; measurements</span></summary>
         <div class="details-body">
           <section class="policy-history" aria-labelledby="history-title">
-            <h2 id="history-title">Policy history <span class="muted">· <span id="change-count">0</span> changes since start</span></h2>
+            <h2 id="history-title">Policy history <span class="muted"><span id="change-count">0</span> changes since start</span></h2>
             <ol id="transitions"><li>Waiting for the first decision</li></ol>
           </section>
           <section aria-labelledby="measurements-title">
@@ -122,7 +124,7 @@
         </div>
       </details>
       <details class="disclosure comparison">
-        <summary><span>Recorded benchmark</span><span class="disclosure-hint">Five strategies · not live data</span></summary>
+        <summary><span>Recorded benchmark</span><span class="disclosure-hint">Five strategies from a recorded test</span></summary>
         <div class="comparison-body">
           <p id="comparison-setup">Loading recorded measurements…</p>
           <div class="table-scroll"><table><thead><tr><th scope="col">Strategy</th><th scope="col">Completed / sec</th><th scope="col">p99 latency</th><th scope="col">Rejected</th><th scope="col">SLO misses</th></tr></thead><tbody id="comparison-rows"></tbody></table></div>
@@ -131,7 +133,7 @@
         </div>
       </details>
     </main>
-    <footer><span>Exact vector search · C++20 / CUDA</span><a href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noreferrer">View source ↗</a></footer>
+    <footer><span>Exact vector search<small>C++20 / CUDA</small></span><a href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noreferrer">View source ↗</a></footer>
   </div>
 </body>
 </html>

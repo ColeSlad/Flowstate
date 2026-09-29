@@ -2,6 +2,7 @@
 const $ = id => document.getElementById(id);
 const number = (value, digits = 0) => value == null ? '—' : Number(value).toLocaleString(undefined, {maximumFractionDigits: digits});
 const percent = value => value == null ? 'Unavailable' : `${number(value * 100, 0)}%`;
+const hardwareLabel = value => value.replaceAll('\u00b7', ',').replaceAll(' ,', ',');
 const recorded = document.body.dataset.mode === 'recorded';
 const clockTime = milliseconds => `${Math.floor(milliseconds / 60000)}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, '0')}`;
 let recording, recordingIndex = 0, playbackTimer, playing = false;
@@ -17,7 +18,7 @@ let controls = {traffic: 'low', top_k: 10, contention: false};
 function connection(state) {
   if (document.body.dataset.connection === state) return;
   document.body.dataset.connection = state;
-  $('connection-label').textContent = state === 'recorded' ? 'Recorded demo' : state === 'live' ? 'Connected' : recorded ? 'Recording unavailable' : 'Reconnecting';
+  $('connection-label').textContent = state === 'recorded' ? 'Recorded measurements. Playback only.' : state === 'live' ? 'Connected to the local runtime.' : recorded ? 'Recording unavailable.' : 'Reconnecting to the local runtime…';
   $('controls').disabled = state !== 'live' || pending;
 }
 function renderControls() {
@@ -99,7 +100,7 @@ function render(state) {
   latest = state; lastEvent = Date.now(); connection(recorded ? 'recorded' : 'live');
   if (!pending && Date.now() - changedAt > 1000) { controls = state.controls; renderControls(); }
   $('dataset-shape').textContent = `${number(state.vectors)} vectors × ${number(state.dimension)} dimensions`;
-  $('dataset-backends').textContent = state.gpu_available ? `${state.cpu_backend.toUpperCase()} + CUDA · deterministic dataset` : `${state.cpu_backend.toUpperCase()} · CPU-only runtime`;
+  $('dataset-backends').textContent = state.gpu_available ? `${state.cpu_backend.toUpperCase()} + CUDA with a deterministic dataset` : `${state.cpu_backend.toUpperCase()} CPU-only runtime`;
   for (const [id, key] of Object.entries({arrival: 'arrival_rate', throughput: 'throughput', queue: 'queue_depth', 'gpu-pending': 'pending_gpu_jobs', rejected: 'rejected', failures: 'failed', violations: 'slo_violations', 'change-count': 'policy_changes'})) $(id).textContent = number(state[key]);
   for (const metric of ['p95', 'p99']) { $(metric).textContent = number(state[`${metric}_ms`], 1); $(metric).classList.toggle('over-target', state[`${metric}_ms`] > state.slo_ms); }
   $('slo').textContent = state.slo_ms;
@@ -114,7 +115,7 @@ function render(state) {
   $('cpu-kind').textContent = state.cpu_backend.toUpperCase(); $('gpu-kind').textContent = state.gpu_available ? 'CUDA' : 'UNAVAILABLE';
   $('batch-size').textContent = number(state.mean_batch_size, 1);
   $('gpu-memory').textContent = state.gpu_memory_free_bytes == null ? 'Unavailable' : `${number(state.gpu_memory_free_bytes / 1073741824, 1)} GiB`;
-  $('controller-kind').textContent = state.controller === 'laya' ? 'Local Laya · every 2 seconds' : 'Heuristic · every 500 ms';
+  $('controller-kind').textContent = state.controller === 'laya' ? 'Local Laya\nUpdates every 2 seconds' : 'Heuristic\nUpdates every 500 ms';
   const [name, description] = policies[state.policy] || ['Unknown', 'Waiting for a policy decision.'];
   $('policy-name').textContent = name; $('policy-description').textContent = description;
   if (state.policy !== lastPolicy) {
@@ -128,9 +129,9 @@ function render(state) {
   $('model-status').hidden = state.controller !== 'laya';
   $('confidence').textContent = state.laya.confidence == null ? 'Unavailable' : `${number(state.laya.confidence * 100, 1)}%`;
   const status = state.laya.status.replaceAll('_', ' ');
-  $('model-detail').textContent = `${state.laya.fallback ? 'Heuristic fallback' : status === 'accepted' ? 'Model policy applied' : 'Model status'} · ${status}${state.laya.latency_ms == null ? '' : ` · ${number(state.laya.latency_ms)} ms`} · ${number(state.laya.fallbacks)} fallbacks`;
+  $('model-detail').textContent = `${state.laya.fallback ? 'Heuristic fallback' : status === 'accepted' ? 'Model policy applied' : 'Model status'}: ${status}${state.laya.latency_ms == null ? '' : `\nResponse time ${number(state.laya.latency_ms)} ms`}\n${number(state.laya.fallbacks)} fallbacks`;
   if (state.contention.error) $('control-feedback').textContent = `GPU workload stopped: ${state.contention.error}`;
-  $('runtime-note').textContent = `${number(state.total_completed)} searches completed · whole-system utilization`;
+  $('runtime-note').textContent = `${number(state.total_completed)} searches completed\nUtilization covers the whole system.`;
   if (!history.length || history.at(-1).time !== state.uptime_ms) {
     history.push({time: state.uptime_ms, p95: state.p95_ms, p99: state.p99_ms});
     history = history.filter(value => value.time >= state.uptime_ms - 60000).slice(-125);
@@ -183,7 +184,7 @@ async function comparison(saved) {
       const response = await fetch('/api/comparison'); if (!response.ok) throw new Error();
       data = await response.json();
     }
-    $('comparison-setup').textContent = `${data.hardware} · ${number(data.vectors)} × ${data.dimension} · ${data.date}`;
+    $('comparison-setup').textContent = `${hardwareLabel(data.hardware)}\n${number(data.vectors)} vectors × ${data.dimension} dimensions\nRecorded ${data.date}`;
     const names = {cpu_latency: 'Static CPU (AVX2)', gpu_immediate: 'Static GPU', gpu_batch: 'Static GPU batching', heuristic: 'Heuristic', laya: 'Local Laya (gated)'};
     $('comparison-rows').replaceChildren(...data.modes.map(value => {
       const row = document.createElement('tr'); row.dataset.mode = value.mode;
@@ -223,7 +224,7 @@ function showRecording(index) {
   $('recording-position').setAttribute('aria-valuetext', `${elapsed} of ${duration}, ${stages[state.stage][0]}`);
   $('recording-stage').textContent = stages[state.stage][1];
   document.querySelectorAll('[data-stage]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.stage === state.stage)));
-  $('runtime-note').textContent = `${number(state.total_completed)} searches completed since runtime start · whole-system utilization · recorded`;
+  $('runtime-note').textContent = `${number(state.total_completed)} searches completed since runtime start\nRecorded utilization covers the whole system.`;
   if (!playing || index === samples.length - 1) pauseRecording();
 }
 function advanceRecording() {
@@ -244,7 +245,8 @@ async function loadRecording() {
           (i && sample.uptime_ms <= data.samples[i - 1].uptime_ms)) throw new Error('Recording timeline is invalid.');
     }
     recording = data;
-    $('recording-description').textContent = `${data.hardware} · captured ${data.date} · ${data.samples.length} measured snapshots. Play or jump to a stage.`;
+    $('recording-description').textContent = hardwareLabel(data.hardware);
+    $('recording-caption').textContent = `Captured ${data.date} with ${data.samples.length} measured snapshots. Play or jump to a stage.`;
     $('chart-period').textContent = 'Recording timeline';
     $('recording-position').max = data.samples.length - 1;
     for (const [key, [label]] of Object.entries(stages)) {

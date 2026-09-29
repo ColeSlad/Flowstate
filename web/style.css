@@ -37,11 +37,8 @@ input:focus-visible + .switch-track { outline: 3px solid var(--focus); outline-o
 .wordmark { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 24px; font-weight: 700; letter-spacing: -1px; }
 .wordmark svg { width: 27px; height: 28px; fill: var(--cpu); stroke: var(--cpu); stroke-width: 2.5; }
 .wordmark svg path { fill: none; }
-.wordmark > span { color: var(--cpu); margin-left: -7px; }
-.connection { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.status-dot { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--muted); }
-body[data-connection=live] .status-dot { background: var(--cpu); }
-body[data-connection=offline] .status-dot { background: var(--warning); }
+.intro .connection { margin-top: 6px; color: var(--muted); font-size: 12px; }
+body[data-connection=offline] .connection { color: var(--warning); }
 body[data-connection=offline] .workspace, body[data-connection=offline] .metrics { opacity: .6; }
 .intro { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 0 30px; }
 h1 { font-size: 34px; font-weight: 600; letter-spacing: -1.3px; line-height: 1.2; margin: 0 0 7px; }
@@ -50,6 +47,10 @@ h1 { font-size: 34px; font-weight: 600; letter-spacing: -1.3px; line-height: 1.2
 body[data-mode=recorded] #controls, body[data-mode=live] .recording { display: none; }
 .recording { border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; background: var(--surface); }
 .recording > p { color: var(--muted); font-size: 13px; margin: 10px 0 16px; }
+.recording .recording-subtitle { margin: 2px 0 16px; font-size: 12px; }
+.recording #recording-description { margin-bottom: 2px; }
+.recording .recording-caption { margin-top: 0; font-size: 12px; }
+.recording-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; color: var(--muted); font-size: 12px; }
 .playback { display: flex; align-items: center; gap: 16px; }
 .playback button, .chapters button { border: 1px solid var(--control-line); border-radius: 7px; background: var(--surface); min-height: 44px; padding: 8px 14px; }
 .playback button { min-width: 130px; background: var(--ink); color: var(--surface); border-color: var(--ink); }
@@ -92,6 +93,8 @@ input:disabled + .switch-track { opacity: .5; }
 .runtime-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 40px; padding: 28px 32px; }
 h2 { font-size: 14px; font-weight: 600; margin: 0; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.routing-panel .section-heading { display: block; }
+.routing-panel .section-heading .muted { display: block; margin-top: 2px; }
 .muted { font-size: 12px; color: var(--muted); font-weight: 400; }
 .backend { margin-top: 20px; }
 .backend-heading, .backend-heading > div { display: flex; align-items: center; gap: 9px; }
@@ -107,10 +110,10 @@ h2 { font-size: 14px; font-weight: 600; margin: 0; }
 .policy-panel { padding-left: 32px; border-left: 1px solid var(--line); min-width: 0; }
 .policy-panel h3 { margin: 18px 0 7px; font-size: 27px; line-height: 1.2; font-weight: 550; letter-spacing: -.8px; }
 .policy-panel > p { font-size: 13px; color: var(--muted); margin: 0; max-width: 32em; }
-.policy-panel .controller-kind { font-size: 12px; margin-top: 18px; }
+.policy-panel .controller-kind { font-size: 12px; margin-top: 18px; white-space: pre-line; }
 .model-status { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 12px; }
 .model-status > div { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
-.model-status p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+.model-status p { font-size: 12px; color: var(--muted); margin: 5px 0 0; white-space: pre-line; }
 .chart-panel { border-top: 1px solid var(--line); padding: 22px 32px 18px; }
 .chart-heading { display: flex; align-items: baseline; gap: 12px; }
 .legend, .legend span { display: flex; align-items: center; gap: 6px; }
@@ -138,7 +141,7 @@ h2 { font-size: 14px; font-weight: 600; margin: 0; }
 .disclosure summary:hover { color: var(--cpu); }
 .disclosure-hint { color: var(--muted); font-size: 12px; }
 .details-body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 48px; padding: 4px 2px 24px; }
-.policy-history h2 { display: flex; flex-wrap: wrap; gap: 5px; }
+.policy-history h2 .muted { display: block; margin-top: 2px; }
 .policy-history ol { list-style: none; padding: 0; margin: 14px 0 0; }
 .policy-history li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 13px; }
 .policy-history li:first-child { font-weight: 600; }
@@ -149,6 +152,7 @@ h2 { font-size: 14px; font-weight: 600; margin: 0; }
 .measurements dd { margin: 0; font-variant-numeric: tabular-nums; }
 .measurement-notes { grid-column: 1/-1; color: var(--muted); font-size: 12px; }
 .measurement-notes p { margin: 0 0 5px; }
+#runtime-note, #comparison-setup { white-space: pre-line; }
 .comparison-body { min-width: 0; padding: 4px 2px 24px; }
 #comparison-setup, .fine-print { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
 .table-scroll { overflow-x: auto; }
@@ -163,25 +167,23 @@ tr[data-mode=gpu_batch] { background: var(--track); }
 footer { display: flex; justify-content: space-between; gap: 20px; padding: 22px 0 26px; color: var(--muted); font-size: 12px; }
 footer a { text-decoration: none; }
 footer a:hover { text-decoration: underline; }
+footer small { display: block; margin-top: 2px; font-size: inherit; }
 @media (max-width: 850px) {
   .page { padding: 0 28px; }
   .controls { gap: 24px; grid-template-columns: 1.5fr 1fr .8fr; }
   .segmented button span { display: block; margin: 0; }
   .runtime-grid { gap: 24px; padding: 24px; grid-template-columns: 1.3fr 1fr; }
   .policy-panel { padding-left: 24px; }
-  .routing-panel .section-heading { align-items: baseline; flex-wrap: wrap; gap: 4px; }
   .chart-panel { padding: 22px 24px 18px; }
 }
 @media (max-width: 620px) {
   .page { padding: 0 20px; }
   .topbar { min-height: 72px; gap: 12px; }
   .wordmark { font-size: 22px; }
-  .connection { font-size: 11px; max-width: 145px; }
   .intro { padding: 16px 0 26px; display: block; }
   h1 { font-size: 30px; }
   .intro .dataset { text-align: left; margin-top: 10px; font-size: 12px; }
   .recording { padding: 18px 16px; }
-  .recording > .section-heading { flex-wrap: wrap; gap: 4px 12px; }
   .playback { flex-wrap: wrap; gap: 4px 12px; }
   .playback input { order: 3; flex-basis: 100%; }
   .playback output { margin-left: auto; }
@@ -193,7 +195,6 @@ footer a:hover { text-decoration: underline; }
   .policy-panel { border-left: 0; border-top: 1px solid var(--line); padding: 22px 0 0; }
   .policy-panel h3 { margin-top: 12px; font-size: 25px; }
   .policy-panel .controller-kind { margin-top: 12px; }
-  .routing-panel .section-heading { flex-wrap: nowrap; }
   .chart-panel { padding: 22px 16px 18px; }
   .chart-panel > .section-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .latency-chart { height: 160px; }
