@@ -4,6 +4,14 @@ const number = (value, digits = 0) => value == null ? '—' : Number(value).toLo
 const percent = value => value == null ? 'Unavailable' : `${number(value * 100, 0)}%`;
 const hardwareLabel = value => value.replaceAll('\u00b7', ',').replaceAll(' ,', ',');
 const recorded = document.body.dataset.mode === 'recorded';
+// Vercel serves the tracker for hosted demos; keep local previews and native sessions untracked.
+if (recorded && location.protocol === 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  const analytics = document.createElement('script');
+  analytics.defer = true;
+  analytics.src = '/_vercel/insights/script.js';
+  document.head.append(analytics);
+}
 const clockTime = milliseconds => `${Math.floor(milliseconds / 60000)}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, '0')}`;
 let recording, recordingIndex = 0, playbackTimer, playing = false;
 const policies = {

@@ -350,6 +350,13 @@ serverless functions, or GPU services needed for the recorded site. Vercel hosts
 the playback page; the recorded computations were performed on the Razer.
 [Vercel static configuration](https://vercel.com/docs/builds/configure-a-build).
 
+Vercel Web Analytics is integrated into the hosted demo. In the Vercel dashboard,
+select this project's **Analytics** tab and click **Enable**, then deploy or
+redeploy for tracking to become available. The page loads Vercel's analytics
+script automatically on HTTPS deployments; local previews and native dashboard
+sessions do not load it. Playback works even if the script is blocked or
+unavailable. [Vercel Web Analytics setup](https://vercel.com/docs/analytics/quickstart).
+
 ### Recording provenance
 
 `web/data/demo.json` contains all 76 unchanged snapshots from the
