@@ -1,6 +1,6 @@
 :root {
-  color-scheme: light dark;
-  --bg: #f5f7f4;
+  color-scheme: light;
+  --bg: #ffffff;
   --surface: #ffffff;
   --ink: #20332c;
   --muted: #59665f;
@@ -11,14 +11,14 @@
   --track: #edf1ed;
   --control-line: #85928a;
   --focus: #465ca4;
-  --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --font: Arial, Helvetica, sans-serif;
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 14px/1.5 var(--font);
   -webkit-font-smoothing: antialiased;
 }
 .page { max-width: 1200px; margin: auto; padding: 0 40px; }
@@ -127,7 +127,7 @@ h2 { font-size: 14px; font-weight: 600; margin: 0; }
 #p99-line { stroke: var(--gpu); stroke-dasharray: 6 3; }
 #slo-line { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 5; }
 .latency-chart line { stroke: var(--line); stroke-width: 1; }
-.latency-chart text { font: 11px var(--mono); fill: var(--muted); }
+.latency-chart text { font: 11px var(--font); font-variant-numeric: tabular-nums; fill: var(--muted); }
 #chart-empty { font-family: inherit; font-size: 13px; }
 .chart-foot, .chart-foot > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
 .chart-foot { justify-content: space-between; margin-top: 9px; font-size: 12px; color: var(--muted); }
@@ -211,13 +211,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 22px
   .details-body { grid-template-columns: 1fr; gap: 24px; }
   .key-body { grid-template-columns: 1fr; }
   footer { font-size: 11px; }
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141c18; --surface: #1b2420; --ink: #edf3ee; --muted: #b1beb5;
-    --cpu: #80d5b7; --gpu: #a5b7fb; --warning: #ffb196;
-    --line: #35423a; --track: #2b3930; --control-line: #7e8f83; --focus: #a5b7fb;
-  }
 }
 @media (prefers-contrast: more) {
   :root { --line: var(--muted); --control-line: var(--ink); }
