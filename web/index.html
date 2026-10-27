@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f7f4">
-  <title>Flowstate — CPU and GPU search</title>
+  <title>Flowstate — CPU / GPU benchmarks</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
@@ -16,18 +16,55 @@
     </header>
     <main>
       <section class="intro" aria-labelledby="page-title">
-        <div><h1 id="page-title">Work follows load.</h1><p id="intro-description">See how a search engine shares work between CPU and GPU.</p><p class="connection" id="connection-label" role="status">Loading measurements…</p></div>
+        <div><h1 id="page-title">CPU / GPU benchmarks</h1><p class="connection" id="connection-label" role="status">Loading measurements…</p></div>
         <div class="intro-actions">
-          <a class="source-button" href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noopener noreferrer">View source code <span aria-hidden="true">↗</span></a>
+          <a class="source-button" href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noopener noreferrer">View source <span aria-hidden="true">↗</span></a>
           <p class="dataset" id="dataset-shape">Waiting for runtime</p>
         </div>
       </section>
 
+      <details class="disclosure benchmark-key" id="benchmark-key">
+        <summary>Feature &amp; metric key</summary>
+        <div class="key-body">
+          <section aria-labelledby="key-workload">
+            <h2 id="key-workload">Workload</h2>
+            <dl>
+              <div><dt>Traffic</dt><dd>Target rate: Quiet 10, Steady 150, Burst 1,200 queries/sec.</dd></div>
+              <div><dt>Results per query (top-K)</dt><dd>Number of highest-scoring matches returned.</dd></div>
+              <div><dt>GPU contention</dt><dd>A competing CUDA workload stresses the GPU.</dd></div>
+              <div><dt>Replay</dt><dd>Play, pause, seek, or jump to a recorded stage. Workload controls require a live runtime.</dd></div>
+            </dl>
+          </section>
+          <section aria-labelledby="key-routing">
+            <h2 id="key-routing">Routing &amp; controllers</h2>
+            <dl>
+              <div><dt>CPU latency</dt><dd>Execute queries on the CPU without batching.</dd></div>
+              <div><dt>GPU immediate</dt><dd>Execute queries on the GPU without batching.</dd></div>
+              <div><dt>GPU batching</dt><dd>Run several queries in one GPU call.</dd></div>
+              <div><dt>Balanced</dt><dd>Split new queries 50/50 between CPU and immediate GPU execution.</dd></div>
+              <div><dt>Heuristic / Laya</dt><dd>Rules / an experimental local model choose the policy. Laya falls back to rules on low confidence or errors.</dd></div>
+              <div><dt>Model confidence</dt><dd>Highest class probability, not measured scheduling accuracy.</dd></div>
+            </dl>
+          </section>
+          <section aria-labelledby="key-metrics">
+            <h2 id="key-metrics">Metrics</h2>
+            <dl>
+              <div><dt>Incoming / completed</dt><dd>Measured arrivals / successful searches per second.</dd></div>
+              <div><dt>Queue depth</dt><dd>Waiting requests; excludes in-flight searches.</dd></div>
+              <div><dt>p95 / p99 latency</dt><dd>95% / 99% of successful searches finish within this time, including queue wait.</dd></div>
+              <div><dt>SLO misses</dt><dd>Queries exceeding the latency target, plus rejections and failures. SLO = service-level objective.</dd></div>
+              <div><dt>Rejected / failed</dt><dd>Queries refused by the runtime / accepted queries that errored.</dd></div>
+              <div><dt>Routing share / utilization</dt><dd>Share of successful completions / whole-machine CPU or GPU activity.</dd></div>
+              <div><dt>Mean GPU batch / free GPU memory</dt><dd>Average queries per GPU batch / available device memory.</dd></div>
+            </dl>
+          </section>
+          <p class="key-note">Dashboard rates and percentiles use a rolling 1-second window. Percentiles are histogram upper bounds, rounded up by at most 10%. Cumulative counters include runtime startup.</p>
+        </div>
+      </details>
+
       <section class="recording" id="recording" aria-labelledby="recording-title">
-        <h2 id="recording-title">Recorded GPU demo</h2>
-        <p class="recording-subtitle">Playback only. No live searches.</p>
-        <p id="recording-description">Loading measured telemetry from the Razer GPU run…</p>
-        <p id="recording-caption" class="recording-caption"></p>
+        <h2 id="recording-title">Recorded GPU benchmark</h2>
+        <p id="recording-description">Loading capture details…</p>
         <div class="playback">
           <button id="play-recording" type="button" disabled>Play recording</button>
           <label class="sr-only" for="recording-position">Recording position</label>
@@ -36,13 +73,12 @@
         </div>
         <div class="chapters" id="recording-chapters" role="group" aria-label="Jump to recorded stage"></div>
         <p class="recording-stage" id="recording-stage" aria-live="polite"></p>
-        <p class="fine-print">All values are recorded measurements. Latency spikes and rejected searches are retained.</p>
         <div class="recording-links"><a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/RESULTS.md#browser-dashboard-and-real-contention--2026-09-25">Capture details</a><a href="https://github.com/ColeSlad/Flowstate/blob/main/docs/benchmarks/2026-09-28/report.md">300-trial benchmark report</a></div>
         <noscript><p>Enable JavaScript to play the recording, or open the benchmark report above.</p></noscript>
       </section>
 
       <fieldset class="controls" id="controls" disabled>
-        <legend class="sr-only">Demo controls</legend>
+        <legend class="sr-only">Workload controls</legend>
         <div class="control-group traffic-group">
           <span class="control-label" id="traffic-label">Traffic</span>
           <div class="segmented" role="group" aria-labelledby="traffic-label">
@@ -76,7 +112,7 @@
       <div class="workspace">
         <div class="runtime-grid">
           <section class="routing-panel" aria-labelledby="routing-title">
-            <div class="section-heading"><h2 id="routing-title">Routing</h2><span class="muted">Completions in the last second</span></div>
+            <div class="section-heading"><h2 id="routing-title">Routing</h2><span class="muted">Share of completions · last second</span></div>
             <div class="backend cpu-backend">
               <div class="backend-heading"><div><strong>CPU</strong><span class="backend-kind" id="cpu-kind">—</span></div><strong class="backend-share" id="cpu-share">—</strong></div>
               <div class="bar-track"><div class="bar-fill" id="cpu-bar"></div></div>
@@ -119,24 +155,24 @@
               <div><dt>CPU completions / sec</dt><dd id="cpu-requests">—</dd></div>
               <div><dt>GPU completions / sec</dt><dd id="gpu-requests">—</dd></div>
               <div><dt>Pending GPU requests</dt><dd id="gpu-pending">—</dd></div>
-              <div><dt>Mean GPU batch</dt><dd id="batch-size">—</dd></div>
+              <div><dt>Mean GPU batch size</dt><dd id="batch-size">—</dd></div>
               <div><dt>Free GPU memory</dt><dd id="gpu-memory">Unavailable</dd></div>
             </dl>
           </section>
-          <div class="measurement-notes"><p id="dataset-backends">Waiting for runtime</p><p id="runtime-note">Waiting for measurements</p><p>Utilization covers the whole machine. Latency includes queue wait; percentiles are rolling one-second histogram upper bounds, rounded by at most 10%. Traffic rates are targets. Results per query changes top-K selection work.</p></div>
+          <div class="measurement-notes"><p id="dataset-backends">Waiting for runtime</p><p id="runtime-note">Waiting for measurements</p></div>
         </div>
       </details>
       <details class="disclosure comparison">
-        <summary><span>Recorded benchmark</span><span class="disclosure-hint">Five strategies from a recorded test</span></summary>
+        <summary><span>Strategy comparison</span><span class="disclosure-hint">Recorded · five strategies</span></summary>
         <div class="comparison-body">
           <p id="comparison-setup">Loading recorded measurements…</p>
           <div class="table-scroll"><table><thead><tr><th scope="col">Strategy</th><th scope="col">Completed / sec</th><th scope="col">p99 latency</th><th scope="col">Rejected</th><th scope="col">SLO misses</th></tr></thead><tbody id="comparison-rows"></tbody></table></div>
-          <p class="comparison-note">Static GPU batching performed best on this trace. Default-gated Laya fell back on all 11 decisions: nine low-confidence responses and two timeouts. An ungated diagnostic chose GPU batching throughout and performed similarly to static batching.</p>
-          <p class="fine-print">Single runs, 8,040 offered queries each. Percentiles cover successful requests; SLO misses include rejected requests. Adaptive controllers used a 2-second interval. These measurements do not establish a general scheduling speedup.</p>
+          <p class="comparison-note">Static GPU batching won this trace. Gated Laya used heuristic fallback for all 11 decisions: 9 low-confidence responses and 2 timeouts.</p>
+          <p class="fine-print">One run per strategy, 8,040 offered queries each; 2-second adaptive updates. Percentiles cover successful requests. SLO misses include rejections and failures. Results apply to this trace.</p>
         </div>
       </details>
     </main>
-    <footer><span>Exact vector search<small>C++20 / CUDA</small></span><a href="https://github.com/ColeSlad/Flowstate" target="_blank" rel="noreferrer">View source ↗</a></footer>
+    <footer><span>Exact vector search · C++20 / CUDA</span></footer>
   </div>
 </body>
 </html>

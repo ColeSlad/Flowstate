@@ -15,10 +15,10 @@ if (recorded && location.protocol === 'https:' && !['localhost', '127.0.0.1', '[
 const clockTime = milliseconds => `${Math.floor(milliseconds / 60000)}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, '0')}`;
 let recording, recordingIndex = 0, playbackTimer, playing = false;
 const policies = {
-  cpu_latency: ['CPU latency', 'CPU execution without a batching delay.'],
-  gpu_immediate: ['GPU immediate', 'GPU execution without a batching delay.'],
-  gpu_batch: ['GPU batching', 'Requests collect into batches for GPU execution.'],
-  balanced: ['Balanced', 'New requests split evenly between CPU and GPU.']
+  cpu_latency: ['CPU latency', 'CPU execution, no batching.'],
+  gpu_immediate: ['GPU immediate', 'GPU execution, no batching.'],
+  gpu_batch: ['GPU batching', 'Queries grouped for GPU execution.'],
+  balanced: ['Balanced', '50/50 CPU and immediate GPU execution.']
 };
 let latest, lastEvent = 0, lastPolicy, pending = false, changedAt = 0;
 let history = [], transitions = [];
@@ -26,7 +26,7 @@ let controls = {traffic: 'low', top_k: 10, contention: false};
 function connection(state) {
   if (document.body.dataset.connection === state) return;
   document.body.dataset.connection = state;
-  $('connection-label').textContent = state === 'recorded' ? 'Recorded measurements. Playback only.' : state === 'live' ? 'Connected to the local runtime.' : recorded ? 'Recording unavailable.' : 'Reconnecting to the local runtime…';
+  $('connection-label').textContent = state === 'recorded' ? 'Recorded playback · no live searches' : state === 'live' ? 'Live runtime connected' : recorded ? 'Recording unavailable' : 'Reconnecting to runtime…';
   $('controls').disabled = state !== 'live' || pending;
 }
 function renderControls() {
@@ -123,7 +123,7 @@ function render(state) {
   $('cpu-kind').textContent = state.cpu_backend.toUpperCase(); $('gpu-kind').textContent = state.gpu_available ? 'CUDA' : 'UNAVAILABLE';
   $('batch-size').textContent = number(state.mean_batch_size, 1);
   $('gpu-memory').textContent = state.gpu_memory_free_bytes == null ? 'Unavailable' : `${number(state.gpu_memory_free_bytes / 1073741824, 1)} GiB`;
-  $('controller-kind').textContent = state.controller === 'laya' ? 'Local Laya\nUpdates every 2 seconds' : 'Heuristic\nUpdates every 500 ms';
+  $('controller-kind').textContent = state.controller === 'laya' ? 'Local Laya · 2-second updates' : 'Heuristic · 500 ms updates';
   const [name, description] = policies[state.policy] || ['Unknown', 'Waiting for a policy decision.'];
   $('policy-name').textContent = name; $('policy-description').textContent = description;
   if (state.policy !== lastPolicy) {
@@ -139,7 +139,7 @@ function render(state) {
   const status = state.laya.status.replaceAll('_', ' ');
   $('model-detail').textContent = `${state.laya.fallback ? 'Heuristic fallback' : status === 'accepted' ? 'Model policy applied' : 'Model status'}: ${status}${state.laya.latency_ms == null ? '' : `\nResponse time ${number(state.laya.latency_ms)} ms`}\n${number(state.laya.fallbacks)} fallbacks`;
   if (state.contention.error) $('control-feedback').textContent = `GPU workload stopped: ${state.contention.error}`;
-  $('runtime-note').textContent = `${number(state.total_completed)} searches completed\nUtilization covers the whole system.`;
+  $('runtime-note').textContent = `${number(state.total_completed)} searches completed since runtime start`;
   if (!history.length || history.at(-1).time !== state.uptime_ms) {
     history.push({time: state.uptime_ms, p95: state.p95_ms, p99: state.p99_ms});
     history = history.filter(value => value.time >= state.uptime_ms - 60000).slice(-125);
@@ -170,8 +170,7 @@ function connect() {
   };
 }
 if (!recorded) {
-  document.title = 'Flowstate — Live runtime';
-  $('intro-description').textContent = 'Live CPU and GPU routing.';
+  document.title = 'Flowstate — Live CPU / GPU benchmarks';
   connect();
   setInterval(() => { if (lastEvent && Date.now() - lastEvent > 2500) connection('offline'); }, 1000);
 }
@@ -204,12 +203,8 @@ async function comparison(saved) {
   } catch { $('comparison-setup').textContent = 'Recorded comparison unavailable.'; }
 }
 
-const stages = {
-  quiet: ['Quiet', 'Light traffic runs on the CPU.'],
-  burst: ['Traffic burst', 'A burst builds a queue; the controller shifts new searches to GPU batches.'],
-  contention: ['GPU contention', 'A competing GPU workload is enabled; routing responds to measured contention.'],
-  quiet_return: ['Recovery', 'Traffic drops. Queued work drains before CPU routing returns.']
-};
+const stages = {quiet: 'Quiet', burst: 'Traffic burst', contention: 'GPU contention', quiet_return: 'Recovery'};
+const trafficRates = {low: 10, steady: 150, burst: 1200};
 function pauseRecording() {
   clearTimeout(playbackTimer); playing = false;
   $('play-recording').textContent = recording && recordingIndex === recording.samples.length - 1 ? 'Replay' : 'Play recording';
@@ -229,10 +224,9 @@ function showRecording(index) {
   $('recording-position').value = index;
   const elapsed = clockTime(state.uptime_ms - firstTime), duration = clockTime(samples.at(-1).uptime_ms - firstTime);
   $('recording-time').textContent = `${elapsed} / ${duration}`;
-  $('recording-position').setAttribute('aria-valuetext', `${elapsed} of ${duration}, ${stages[state.stage][0]}`);
-  $('recording-stage').textContent = stages[state.stage][1];
+  $('recording-position').setAttribute('aria-valuetext', `${elapsed} of ${duration}, ${stages[state.stage]}`);
+  $('recording-stage').textContent = `${number(trafficRates[state.controls.traffic])} queries/sec target · top-K ${state.controls.top_k} · GPU contention ${state.controls.contention ? 'on' : 'off'}`;
   document.querySelectorAll('[data-stage]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.stage === state.stage)));
-  $('runtime-note').textContent = `${number(state.total_completed)} searches completed since runtime start\nRecorded utilization covers the whole system.`;
   if (!playing || index === samples.length - 1) pauseRecording();
 }
 function advanceRecording() {
@@ -241,7 +235,7 @@ function advanceRecording() {
   playbackTimer = setTimeout(() => { showRecording(recordingIndex + 1); advanceRecording(); }, delay);
 }
 async function loadRecording() {
-  document.title = 'Flowstate — Recorded GPU demo';
+  document.title = 'Flowstate — Recorded CPU / GPU benchmarks';
   try {
     const response = await fetch('/data/demo.json');
     if (!response.ok) throw new Error('Recording could not be loaded.');
@@ -253,11 +247,10 @@ async function loadRecording() {
           (i && sample.uptime_ms <= data.samples[i - 1].uptime_ms)) throw new Error('Recording timeline is invalid.');
     }
     recording = data;
-    $('recording-description').textContent = hardwareLabel(data.hardware);
-    $('recording-caption').textContent = `Captured ${data.date} with ${data.samples.length} measured snapshots. Play or jump to a stage.`;
+    $('recording-description').textContent = `${hardwareLabel(data.hardware)} · ${data.date}`;
     $('chart-period').textContent = 'Recording timeline';
     $('recording-position').max = data.samples.length - 1;
-    for (const [key, [label]] of Object.entries(stages)) {
+    for (const [key, label] of Object.entries(stages)) {
       const index = data.samples.findIndex(sample => sample.stage === key);
       if (index < 0) continue;
       const button = document.createElement('button'); button.type = 'button'; button.dataset.stage = key; button.textContent = label;

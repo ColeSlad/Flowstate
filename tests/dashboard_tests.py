@@ -64,7 +64,7 @@ try:
     assert initial['controls'] == {'traffic': 'low', 'top_k': 10, 'contention': False}
     if not gpu:
         assert initial['gpu_utilization'] is None and initial['gpu_memory_free_bytes'] is None
-    for path, fragment in [('/', 'Work follows load.'), ('/app.js', 'EventSource'), ('/style.css', 'prefers-reduced-motion')]:
+    for path, fragment in [('/', 'CPU / GPU benchmarks'), ('/app.js', 'EventSource'), ('/style.css', 'prefers-reduced-motion')]:
         with request(path) as response:
             content = response.read().decode()
             assert fragment in content
